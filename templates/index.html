@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title%} {{ title }} {% endblock %}
+{% block content%}
+
+<div class="container py-4 text-center" id="content">
+
+
+    {% if current_user.is_authenticated %}
+
+    <div class="featured-area">
+        <div>Hello world</div>
+    </div>
+
+    {% else %}
+
+    <div class="banner-area">
+        <div class="container">
+            <div class="row justify-content-center height align-items-center">
+                <div class="col-lg-8">
+                    <div class="banner-content text-center">
+                        <span class="text-white top text-uppercase">Добро пожаловать</span>
+                        <h1 class="text-white text-uppercase"></h1>
+                        <a href="{{url_for('login')}}" class="primary-btn d-inline-flex align-items-center"><span
+                                class="mr-10">SIGN IN</span><span class="lnr lnr-arrow-right"></span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>
+{% endblock %}
