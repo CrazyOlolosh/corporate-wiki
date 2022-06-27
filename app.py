@@ -11,7 +11,7 @@ from flask_login import (
     logout_user,
     login_required,
 )
-
+import os
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
@@ -22,13 +22,15 @@ db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
 
+DATABASE_URI = os.environ.get("DATABASE_URI")
+
 
 def create_app():
     app = Flask(__name__)
 
     app.secret_key = "ea=n=K-t#LbH7[nvM']O`Gi4/C'>c="
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://icedemfsxqcykk:8b3358b9f7efae126cbbb62448dc82b4d60cf5972849f3d3bdf61a8554bc9d75@ec2-54-155-61-133.eu-west-1.compute.amazonaws.com:5432/dcpi1dqrfvfni2"
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
     login_manager.init_app(app)
