@@ -12,6 +12,7 @@ from flask_login import (
     login_required,
 )
 import os
+from dotenv import load_dotenv
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
@@ -22,6 +23,7 @@ db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
 
+load_dotenv()
 DATABASE_URI = os.environ.get("DATABASE_URI")
 
 
