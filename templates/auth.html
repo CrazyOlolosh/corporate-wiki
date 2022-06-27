@@ -1,33 +1,39 @@
 {% extends "base.html" %}
 {% block title%} {{ title }} {% endblock %}
 {% block content%}
-<div class="container">
-    <div class="py-4 text-center">
-        <div class="row">
-            <div class="m-auto card p-4">
-                <form action="{{ request.path }}" method="POST" class="card-body">
-                    {{ form.csrf_token }}
 
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
-                    {% if messages %}
-                    {% for category, message in messages %}
-                    <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-                    {% endwith %}
+<form action="{{ request.path }}" method="POST">
+    {{ form.csrf_token }}
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="hero min-h-screen bg-base-200">
+        <div class="hero-content flex-col lg:flex-row-reverse">
+            <div class="text-center lg:text-left">
+                <h1 class="text-5xl font-bold">Login now!</h1>
+                <p class="py-6">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi
+                    exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.</p>
+            </div>
+            <div class="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+                <div class="card-body">
                     <div class="text-center">
-                        <h2>Black Caviar Games HUB</h2>
-                        <h5 class="text-primary">{{ text }}</h5>
+                        
+                        <h2 class="text-2xl text-primary font-bold">{{ text }}</h2>
                     </div>
 
                     {% if request.path == '/register/' %}
                     <div class="form-group mb-3">
-                        {{ form.username(class_="form-control",placeholder="Username")}}
+                        {{ form.username(class_="form-control w-full",placeholder="Username")}}
                     </div>
                     {% for error in form.username.errors %}
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -37,7 +43,7 @@
                     {% endfor%}
                     {% endif%}
                     <div class="form-group mb-3">
-                        {{ form.email(class_="form-control",placeholder="Email")}}
+                        {{ form.email(class_="form-control w-full",placeholder="Email")}}
                     </div>
                     {% for error in form.email.errors %}
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -46,7 +52,7 @@
                     </div>
                     {% endfor%}
                     <div class="form-group mb-3">
-                        {{ form.pwd(class_="form-control",placeholder="Password")}}
+                        {{ form.pwd(class_="form-control w-full",placeholder="Password")}}
                     </div>
                     {% for error in form.pwd.errors %}
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -55,7 +61,7 @@
                     </div> {% endfor%}
                     {% if request.path == '/register/' %}
                     <div class="form-group mb-3">
-                        {{ form.cpwd(class_="form-control",placeholder="Confirm Password")}}
+                        {{ form.cpwd(class_="form-control w-full",placeholder="Confirm Password")}}
                     </div>
                     {% for error in form.cpwd.errors %}
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -72,7 +78,7 @@
                         <p>
                             {% if request.path != '/register/' %}
                             <!-- New here?
-                            <a href="{{url_for('register')}}">Create account</a> -->
+                                        <a href="{{url_for('register')}}">Create account</a> -->
                             {% else %}
                             Already have an account?
                             <a href="{{url_for('login')}}">Login</a>
@@ -80,9 +86,10 @@
                         </p>
 
                     </div>
-                </form>
+                </div>
             </div>
         </div>
-    </div>        
-</div>
+    </div>
+
+</form>
 {% endblock %}
