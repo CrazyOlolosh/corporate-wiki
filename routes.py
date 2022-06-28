@@ -68,7 +68,7 @@ def index():
     return render_template("index.html", title="Home")
 
 
-@app.route("/login/", methods=("GET", "POST"), strict_slashes=False)
+@app.route("/login", methods=("GET", "POST"), strict_slashes=False)
 def login():
     form = login_form()
 
@@ -89,17 +89,19 @@ def login():
 
 
 # Register route
-@app.route("/register/", methods=("GET", "POST"), strict_slashes=False)
+@app.route("/register", methods=("GET", "POST"), strict_slashes=False)
 def register():
     form = register_form()
     if form.validate_on_submit():
         try:
             email = form.email.data
             pwd = form.pwd.data
-            username = form.username.data
+            name = form.name.data
+            username = str(email).split['@'][0]
 
             newuser = User(
                 username=username,
+                name=name,
                 email=email,
                 pwd=bcrypt.generate_password_hash(pwd).decode("utf-8"),
             )
