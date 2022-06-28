@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title%} {{ title }} {% endblock %}
+{% block content%}
+<link rel="stylesheet" href="/richtexteditor/rte_theme_default.css" />
+<script type="text/javascript" src="/richtexteditor/rte.js"></script>
+<script type="text/javascript" src='/richtexteditor/plugins/all_plugins.js'></script>
+
+<div class="min-h-full">
+    {% include "navbar.html" %}
+
+    <header class="bg-white shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold text-gray-900">Новая запись</h1>
+        </div>
+    </header>
+    <main>
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="form-group">
+                {{ form.heading.label(class_='label') }}
+                <p class="control">
+                    {{ form.heading(class_="input rounded-md") }}
+                </p>
+            </div>
+            
+            <div class="form-group">
+                {{ form.post.label(class_='label') }}
+                <p class="control">
+                    {{ form.post(rows=26) }}
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <div class="control">
+                    {{ form.submit(class_="btn rounded-md", type_="submit") }}
+                </div>
+            </div>
+            
+            <script type="text/javascript">
+                var editor1 = new RichTextEditor("#post");
+            </script>
+        </div>
+    </main>
+</div>
+
+
+{% endblock %}

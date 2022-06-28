@@ -9,6 +9,7 @@ from flask import (
     request,
     Response,
     jsonify,
+    make_response
 )
 
 from datetime import datetime, timedelta
@@ -36,7 +37,7 @@ from flask_login import (
 
 from app import create_app, db, login_manager, bcrypt
 from models import User
-from forms import login_form, register_form
+from forms import login_form, register_form, post_form
 
 import threading
 from json import dumps
@@ -113,7 +114,7 @@ def register():
 
         except InvalidRequestError:
             db.session.rollback()
-            flash(f"Something went wrong!", "danger")
+            flash(f"Something went wrong!", "error")
         except IntegrityError:
             db.session.rollback()
             flash(f"User already exists!.", "warning")
@@ -122,13 +123,13 @@ def register():
             flash(f"Invalid Entry", "warning")
         except InterfaceError:
             db.session.rollback()
-            flash(f"Error connecting to the database", "danger")
+            flash(f"Error connecting to the database", "error")
         except DatabaseError:
             db.session.rollback()
-            flash(f"Error connecting to the database", "danger")
+            flash(f"Error connecting to the database", "error")
         except BuildError:
             db.session.rollback()
-            flash(f"An error occured !", "danger")
+            flash(f"An error occured !", "error")
     return render_template(
         "auth.html",
         form=form,
@@ -152,6 +153,35 @@ def favicon():
         "favicon.ico",
         mimetype="image/vnd.microsoft.icon",
     )
+
+
+@app.route('/create')
+def post():
+    form = post_form()
+    return render_template('create.html',form=form)
+
+
+@app.route('/imageuploader', methods=['POST'])
+@login_required
+def imageuploader():
+    file = request.files.get('file')
+    if file:
+        filename = file.filename.lower()
+        fn, ext = filename.split('.')
+        # truncate filename (excluding extension) to 30 characters
+        fn = fn[:30]
+        fn = fn.replace(' ', '_')
+        filename = fn + '.' + ext
+        print(filename)
+        if ext in ['jpg', 'gif', 'png', 'jpeg']:
+            img_fullpath = os.path.join("./static/uploads", filename)
+            file.save(img_fullpath)
+            return jsonify({'location' : filename})
+
+    # fail, image did not upload
+    output = make_response(404)
+    output.headers['Error'] = 'Image failed to upload'
+    return output
 
 
 if __name__ == "__main__":

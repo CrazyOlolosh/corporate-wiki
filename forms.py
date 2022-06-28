@@ -5,6 +5,7 @@ from wtforms import (
     IntegerField,
     DateField,
     TextAreaField,
+    SubmitField
 )
 
 from flask_wtf import FlaskForm
@@ -51,3 +52,10 @@ class register_form(FlaskForm):
     def validate_uname(self, uname):
         if User.query.filter_by(username=uname.data).first():
             raise ValidationError("Username already taken!")
+
+
+class post_form(FlaskForm):
+    heading = StringField('Заголовок', validators=[InputRequired(), Length(max=100)])
+    post = TextAreaField('Основной текст')
+    tags = StringField('Tags')
+    submit = SubmitField('Опубликовать')
