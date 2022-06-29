@@ -38,7 +38,7 @@ from flask_login import (
 )
 
 from app import create_app, db, login_manager, bcrypt
-from models import User, Page
+from models import Spaces, User, Page
 from forms import login_form, register_form, post_form
 
 import threading
@@ -68,7 +68,23 @@ def session_handler():
 
 @app.route("/", methods=("GET", "POST"), strict_slashes=False)
 def index():
-    return render_template("index.html", title="Home")
+    db.session.begin()
+    spaces_raw = Spaces.query.all()
+    db.session.close()
+    
+    spaces = [
+        {
+            'id': space.id,
+            'parrent': space.parent,
+            'name': space.name,
+            'image': space.logo,
+            'members': space.members,
+            'description': space.description,
+            'homepage': space.homepage,
+        }
+        for space in spaces_raw
+    ]
+    return render_template("index.html", title="Home", spaces=spaces)
 
 
 @app.route("/login", methods=("GET", "POST"), strict_slashes=False)
@@ -238,6 +254,29 @@ def page():
 
         return render_template('page.html', title=title, text=text)
 
+
+@app.route('/spaces', methods=("GET", "POST", "DELETE", "PATCH"))
+@login_required
+def spaces():
+    if request.method == "GET":
+        db.session.begin()
+        spaces_raw = Spaces.query.all()
+        db.session.close()
+
+        spaces = [
+            {
+                'id': space.id,
+                'parrent': space.parent,
+                'name': space.name,
+                'image': space.logo,
+                'members': space.members,
+                'description': space.description,
+                'homepage': space.homepage,
+            }
+            for space in spaces_raw
+        ]
+
+        return render_template("spaces.html", title="Пространства", spaces=spaces)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5003, debug=True)
