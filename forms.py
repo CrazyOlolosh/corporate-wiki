@@ -29,7 +29,7 @@ class register_form(FlaskForm):
             InputRequired(),
             Length(3, 20, message="Please provide a valid name"),
             Regexp(
-                "^[A-Za-z][A-Za-z0-9_.]*$",
+                "^[A-Za-zА-Яа-я][A-Za-zА-Яа-я0-9_. ]*$",
                 0,
                 "Usernames must have only letters, " "numbers, dots or underscores",
             ),

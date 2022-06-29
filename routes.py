@@ -100,7 +100,7 @@ def register():
             email = form.email.data
             pwd = form.pwd.data
             name = form.name.data
-            username = str(email).split['@'][0]
+            username = str(email).split('@')[0]
 
             newuser = User(
                 username=username,
