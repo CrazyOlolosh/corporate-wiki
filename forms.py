@@ -56,6 +56,4 @@ class register_form(FlaskForm):
 
 class post_form(FlaskForm):
     heading = StringField('Заголовок', validators=[InputRequired(), Length(max=100)])
-    post = TextAreaField('Основной текст')
-    tags = StringField('Tags')
-    submit = SubmitField('Опубликовать')
+    post = TextAreaField('Основной текст', validators=[InputRequired()])

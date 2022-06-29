@@ -21,7 +21,7 @@ RTE_DefaultConfig.fontNameDropDownMaxWidth = "140px";
 RTE_DefaultConfig.tooltipAttribute = "rte-tooltip";    //change to "no-tooltip" to hide tooltip
 
 RTE_DefaultConfig.timeoutAddToUndo = 900; //When uses types fast, wait 900ms to add undo item.
-RTE_DefaultConfig.skin = "default";     // default, rounded-corner, gray or blue. Sets the skin for how the toolbar is draw. Create your custom skin or choose from predefined skins.
+RTE_DefaultConfig.skin = "rounded-corner";     // default, rounded-corner, gray or blue. Sets the skin for how the toolbar is draw. Create your custom skin or choose from predefined skins.
 RTE_DefaultConfig.toolbar = "default"; // default, basic or full. Auto configures the toolbar with a set of buttons on desktop.
 RTE_DefaultConfig.toolbarMobile = "mobile";   // The toolbar set on mobile devices. 
 RTE_DefaultConfig.maxWidthForMobile = 992; // When the screen (browser window) gets smaller than 992, editor should have mobile toolbar.
@@ -33,9 +33,9 @@ RTE_DefaultConfig.enableObjectResizing = true; //Specifies whether or not to all
 RTE_DefaultConfig.toggleBorder = true; //Specifies the ToggleBorder state. ToggleBorder is a handy function which allows you to see the borders without setting things to border = 1 or something like that in code.
 RTE_DefaultConfig.readOnly = false; //Gets or sets a value which indicates whether the RichTextEditor should be an active HTML editor, or a read-only document viewer.
 
-RTE_DefaultConfig.editorResizeMode = "both"; //both, height or none. Gets or sets the resize mode.
+RTE_DefaultConfig.editorResizeMode = "height"; //both, height or none. Gets or sets the resize mode.
 RTE_DefaultConfig.showPlusButton = true; // Specifies whether to display the editor plus button.
-RTE_DefaultConfig.showTagList = true; // Specifies whether to display the tag selector in the editor bottom bar.
+RTE_DefaultConfig.showTagList = false; // Specifies whether to display the tag selector in the editor bottom bar.
 RTE_DefaultConfig.showStatistics = true; //Specifies whether to display the content statistics in the editor bottom bar.
 RTE_DefaultConfig.showSelectedBlock = true;    //show selected paragraph as [__rte_select_block]{...}
 RTE_DefaultConfig.focusOnLoad = false; // Specifies whether the editor grabs focus when the page loads. If this property is set to true then the editor will take focus, if it is set to false it will not.
@@ -58,7 +58,7 @@ RTE_DefaultConfig.pasteMode = "Auto"; // Specifies the manner in which the edito
 RTE_DefaultConfig.floatParagraphPos = "left";//left or right
 RTE_DefaultConfig.floatParagraphPosX = 0; //x offset
 RTE_DefaultConfig.floatParagraphPosY = 0; //y offset
-RTE_DefaultConfig.url_base = "/richtexteditor"; // Specifies a base URL of richtexteditor
+RTE_DefaultConfig.url_base = "static/richtexteditor"; // Specifies a base URL of richtexteditor
 RTE_DefaultConfig.contentCssUrl = "%url_base%/runtime/richtexteditor_content.css"; // Specifies the location of the style sheet that will be used by the editable area.
 RTE_DefaultConfig.previewCssUrl = "%url_base%/runtime/richtexteditor_preview.css"; // Specifies the location of the style sheet that will be used by the preview window.
 RTE_DefaultConfig.previewScriptUrl = "%url_base%/runtime/richtexteditor_preview.js"; // Specifies the location of javascript file that will be used by the preview window.

@@ -33,7 +33,7 @@
 
                     {% if request.path == '/register' %}
                     <div class="form-group mb-3">
-                        {{ form.name(class_="form-control w-full",placeholder="Имя и фамилия")}}
+                        {{ form.name(class_="form-control w-full",placeholder="Фамилия и имя")}}
                     </div>
                     {% for error in form.name.errors %}
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -77,8 +77,8 @@
 
                         <p>
                             {% if request.path != '/register' %}
-                            <!-- New here?
-                                        <a href="{{url_for('register')}}">Create account</a> -->
+                            New here?
+                                        <a href="{{url_for('register')}}" class="text-primary font-bold">Create account</a>
                             {% else %}
                             Already have an account?
                             <a href="{{url_for('login')}}" class="text-primary font-bold">Login</a>

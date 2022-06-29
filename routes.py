@@ -1,3 +1,4 @@
+from types import NoneType
 from flask import (
     Flask,
     render_template,
@@ -14,6 +15,7 @@ from flask import (
 
 from datetime import datetime, timedelta
 import time
+from sqlalchemy import desc
 from sqlalchemy.exc import (
     IntegrityError,
     DataError,
@@ -36,7 +38,7 @@ from flask_login import (
 )
 
 from app import create_app, db, login_manager, bcrypt
-from models import User
+from models import User, Page
 from forms import login_form, register_form, post_form
 
 import threading
@@ -109,6 +111,7 @@ def register():
 
             db.session.add(newuser)
             db.session.commit()
+            db.session.close()
             flash(f"Account Succesfully created", "success")
             return redirect(url_for("login"))
 
@@ -146,6 +149,12 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    # note that we set the 404 status explicitly
+    return render_template('404.html'), 404
+
+
 @app.route("/favicon.ico")
 def favicon():
     return send_from_directory(
@@ -155,10 +164,40 @@ def favicon():
     )
 
 
-@app.route('/create')
+@app.route('/create', methods=("GET", "POST"), strict_slashes=False)
+@login_required
 def post():
     form = post_form()
-    return render_template('create.html',form=form)
+    if form.is_submitted():
+        text = form.post.data
+        title = form.heading.data
+        print(title)
+        parent = ''
+        space = ''
+        limitations = ''
+
+        date = int(time.time()) 
+        db.session.begin()
+        new_page = Page(
+            title=title,
+            author=current_user.username,
+            text=text,
+            date=date,
+            parent=parent,
+            space=space,
+            limitations=limitations,
+        )
+
+        db.session.add(new_page)
+        db.session.commit()
+
+        page = Page.query.filter(Page.author == current_user.username).order_by(desc(Page.date)).first()
+        page_id = page.id
+        db.session.close()
+
+        return redirect(url_for('page', id=page_id))
+        
+    return render_template('create.html',form=form, title="Новая запись")
 
 
 @app.route('/imageuploader', methods=['POST'])
@@ -182,6 +221,22 @@ def imageuploader():
     output = make_response(404)
     output.headers['Error'] = 'Image failed to upload'
     return output
+
+
+@app.route('/page', methods=("GET", "DELETE", "PATCH"))
+@login_required
+def page():
+    id = request.args['id']
+    if request.method == "GET":
+        try:
+            page_note = Page.query.get(id)
+            title = page_note.title
+            text = page_note.text
+        except AttributeError:
+            return render_template('404.html')
+
+
+        return render_template('page.html', title=title, text=text)
 
 
 if __name__ == "__main__":

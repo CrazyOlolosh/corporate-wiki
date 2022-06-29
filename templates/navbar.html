@@ -161,3 +161,9 @@
         </div>
     </div>
 </nav>
+<script>
+    function dropdownHandler(element) {
+        let single = $(element).closest("div").next();
+        $(single).toggleClass("hidden");
+    }
+</script>

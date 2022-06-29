@@ -15,26 +15,27 @@
     </header>
     <main>
         <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div class="form-group">
-                {{ form.heading.label(class_='label') }}
-                <p class="control">
-                    {{ form.heading(class_="input rounded-md") }}
-                </p>
-            </div>
-            
-            <div class="form-group">
-                {{ form.post.label(class_='label') }}
-                <p class="control">
-                    {{ form.post(rows=26) }}
-                </p>
-            </div>
-            
-            <div class="form-group">
-                <div class="control">
-                    {{ form.submit(class_="btn rounded-md", type_="submit") }}
+            <form action="{{ request.path }}" method="POST">
+                <div class="form-group">
+                    {{ form.heading.label(class_='label mx-3 text-lg') }}
+                    <p class="control mx-3">
+                        {{ form.heading(class_="input rounded-md w-full px-1") }}
+                    </p>
                 </div>
-            </div>
-            
+
+                <div class="form-group">
+                    {{ form.post.label(class_='label mx-3 text-lg') }}
+                    <p class="control mx-3">
+                        {{ form.post(rows=26) }}
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn float-right mx-3 mt-4"> Опубликовать </button>
+                    </div>
+                </div>
+            </form>
             <script type="text/javascript">
                 var editor1 = new RichTextEditor("#post");
             </script>

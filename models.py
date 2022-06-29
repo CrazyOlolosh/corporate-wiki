@@ -16,3 +16,28 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
+
+
+class Page(UserMixin, db.Model):
+    __tablename__ = "Pages"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    author = db.Column(db.String(80))
+    text = db.Column(db.String(), nullable=False)
+    parent = db.Column(db.String(120))
+    space = db.Column(db.String(30))
+    limitations = db.Column(db.String(50))
+    date = db.Column(db.Integer)
+
+    def __init__(self, title, author, text, parent, space, limitations, date):
+        self.title = title
+        self.author = author
+        self.text = text
+        self.parent = parent
+        self.space = space
+        self.limitations = limitations
+        self.date = date
+
+    def __repr__(self):
+        return f""
