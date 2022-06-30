@@ -71,7 +71,7 @@ def index():
     db.session.begin()
     spaces_raw = Spaces.query.all()
     db.session.close()
-    
+
     spaces = [
         {
             'id': space.id,
@@ -196,7 +196,7 @@ def post():
         space = form.space.data
         limitations = ''
 
-        date = int(time.time()) 
+        date = int(time.time())
         db.session.begin()
         new_page = Page(
             title=title,
@@ -216,31 +216,8 @@ def post():
         db.session.close()
 
         return redirect(url_for('page', id=page_id))
-        
-    return render_template('create.html',form=form, title="Новая запись")
 
-
-@app.route('/imageuploader', methods=['POST'])
-@login_required
-def imageuploader():
-    file = request.files.get('file')
-    if file:
-        filename = file.filename.lower()
-        fn, ext = filename.split('.')
-        # truncate filename (excluding extension) to 30 characters
-        fn = fn[:30]
-        fn = fn.replace(' ', '_')
-        filename = fn + '.' + ext
-        print(filename)
-        if ext in ['jpg', 'gif', 'png', 'jpeg']:
-            img_fullpath = os.path.join("./static/uploads", filename)
-            file.save(img_fullpath)
-            return jsonify({'location' : filename})
-
-    # fail, image did not upload
-    output = make_response(404)
-    output.headers['Error'] = 'Image failed to upload'
-    return output
+    return render_template('create.html', form=form, title="Новая запись")
 
 
 @app.route('/page', methods=("GET", "DELETE", "PATCH"))
@@ -255,7 +232,6 @@ def page():
             space = page_note.space
         except AttributeError:
             return render_template('404.html')
-
 
         return render_template('page.html', title=title, text=text, space=space)
 
