@@ -98,9 +98,9 @@ def login():
                 login_user(user)
                 return redirect(url_for("index"))
             else:
-                flash("Invalid Username or password!", "danger")
+                flash("Invalid Username or password!", "error")
         except Exception as e:
-            flash(e, "danger")
+            flash(e, "error")
 
     return render_template(
         "auth.html", form=form, text="Login", title="Login", btn_action="Login"
@@ -117,7 +117,7 @@ def register():
             pwd = form.pwd.data
             name = form.name.data
             username = str(email).split('@')[0]
-
+            db.session.begin()
             newuser = User(
                 username=username,
                 name=name,
@@ -183,13 +183,17 @@ def favicon():
 @app.route('/create', methods=("GET", "POST"), strict_slashes=False)
 @login_required
 def post():
+    print(request.referrer)
     form = post_form()
+    db.session.begin()
+    form.space.choices = [(space.id, space.name) for space in Spaces.query.all()]
+
     if form.is_submitted():
         text = form.post.data
         title = form.heading.data
         print(title)
-        parent = ''
-        space = ''
+        parent = form.parent.data
+        space = form.space.data
         limitations = ''
 
         date = int(time.time()) 
@@ -248,20 +252,21 @@ def page():
             page_note = Page.query.get(id)
             title = page_note.title
             text = page_note.text
+            space = page_note.space
         except AttributeError:
             return render_template('404.html')
 
 
-        return render_template('page.html', title=title, text=text)
+        return render_template('page.html', title=title, text=text, space=space)
 
 
 @app.route('/spaces', methods=("GET", "POST", "DELETE", "PATCH"))
 @login_required
 def spaces():
     if request.method == "GET":
-        db.session.begin()
+        
         spaces_raw = Spaces.query.all()
-        db.session.close()
+
 
         spaces = [
             {
@@ -277,6 +282,35 @@ def spaces():
         ]
 
         return render_template("spaces.html", title="Пространства", spaces=spaces)
+
+
+@app.route('/tree/<space>')
+@login_required
+def page_tree_gen(space):
+    ref = request.referrer.split('id=')[-1]
+    print(ref)
+
+    pages = Page.query.filter(Page.space == space).all()
+
+    tree_structure = []
+
+    for page in pages:
+        pageObj = {}
+        pageObj['id'] = page.id
+        if page.parent == '':
+            pageObj['parent'] = '#'
+            pageObj['state'] = {'opened': True}
+        else:
+            pageObj['parent'] = page.parent
+        if page.id == int(ref):
+            pageObj["state"] = {'opened': True, 'selected': True}
+        else:
+            pageObj["state"] = {'selected': False}
+        pageObj['text'] = page.title
+        pageObj['a_attr'] = {'href': f'/page?id={page.id}', 'target': '_self'}
+        tree_structure.append(pageObj)
+
+    return dumps(tree_structure)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5003, debug=True)

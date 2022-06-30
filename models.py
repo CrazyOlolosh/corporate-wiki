@@ -18,6 +18,12 @@ class User(UserMixin, db.Model):
     fav_pages = db.Column(db.String())
     allowed_pages = db.Column(db.String())
 
+    def __init__(self, username, name, email, pwd, role=None, user_pic=None, confirmed=False, fav_spaces=None, allowed_spaces=None, fav_pages=None, allowed_pages=None):
+        self.username = username
+        self.name = name
+        self.pwd = pwd
+        self.email = email
+
     def __repr__(self):
         return '<User %r>' % self.username
 
