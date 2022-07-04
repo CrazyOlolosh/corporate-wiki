@@ -10,7 +10,7 @@ from flask import (
     request,
     Response,
     jsonify,
-    make_response
+    g
 )
 
 from datetime import datetime, timedelta
@@ -40,6 +40,7 @@ from flask_login import (
 from app import create_app, db, login_manager, bcrypt
 from models import Spaces, User, Page
 from forms import login_form, register_form, post_form
+
 
 import threading
 from json import dumps
@@ -183,16 +184,28 @@ def favicon():
 @app.route('/create', methods=("GET", "POST"), strict_slashes=False)
 @login_required
 def post():
-    print(request.referrer)
-    form = post_form()
-    db.session.begin()
-    form.space.choices = [(space.id, space.name) for space in Spaces.query.all()]
+    ref = request.referrer.split('/')[-1]
+    if 'page?id=' in ref:
+        ref_id = ref.split('id=')[-1]
+        ref_page = Page.query.get(ref_id)
+        space_default = ref_page.space
+        parent_default = ref_page.parent
+        form = post_form(space=space_default, parent=parent_default)
+        form.parent.choices = [(page.id, page.title) for page in Page.query.filter(Page.space == space_default).order_by(Page.parent, Page.id).all()]
+    else:
+        form = post_form()
+
+    form.space.choices = [(space.id, space.name) for space in Spaces.query.order_by(Spaces.parent, Spaces.id).all()]
 
     if form.is_submitted():
         text = form.post.data
+        text = text.replace('\n','')
         title = form.heading.data
         print(title)
         parent = form.parent.data
+        print(parent)
+        if parent == '':
+            parent is None
         space = form.space.data
         limitations = ''
 
@@ -217,7 +230,31 @@ def post():
 
         return redirect(url_for('page', id=page_id))
 
-    return render_template('create.html', form=form, title="Новая запись")
+    return render_template('create.html', action="create", form=form, title="Новая запись")
+
+
+@app.route('/edit', methods=("GET", "POST"), strict_slashes=False)
+@login_required
+def edit():
+    id = request.args['id']
+    data = Page.query.get(id)
+    form = post_form(space=data.space, parent=data.parent)
+    form.heading.data = data.title
+    gen_parent_choices = [(page.id, page.title) for page in Page.query.filter(Page.space == data.space).order_by(Page.parent, Page.id).all()]
+    print(gen_parent_choices)
+    parent_choices = []
+    form.parent.choices = [(page.id, page.title) for page in Page.query.filter(Page.space == data.space).order_by(Page.parent, Page.id).all()]
+    form.space.choices = [(space.id, space.name) for space in Spaces.query.order_by(Spaces.parent, Spaces.id).all()]
+
+    page_text = data.text
+    # page_text = page_text.replace('<br />','')
+    # page_text = re.sub(r'\n','', page_text)
+    page_text = page_text.replace('"','\\"')
+    # if re.search(r'\n', page_text):
+    #     print('Catch')
+    page_title = data.title
+
+    return render_template('create.html', action="edit", form=form, title="Редактирование", text=page_text, p_title=page_title)
 
 
 @app.route('/page', methods=("GET", "DELETE", "PATCH"))
@@ -233,7 +270,7 @@ def page():
         except AttributeError:
             return render_template('404.html')
 
-        return render_template('page.html', title=title, text=text, space=space)
+        return render_template('page.html', id=id, title=title, text=text, space=space)
 
 
 @app.route('/spaces', methods=("GET", "POST", "DELETE", "PATCH"))
@@ -263,8 +300,11 @@ def spaces():
 @app.route('/tree/<space>')
 @login_required
 def page_tree_gen(space):
-    ref = request.referrer.split('id=')[-1]
-    print(ref)
+    ref = request.referrer.split('/')[-1]
+    if 'page?id=' in ref:
+        ref_id = ref.split('id=')[-1]
+    else:
+        ref_id = 0
 
     pages = Page.query.filter(Page.space == space).all()
 
@@ -273,17 +313,16 @@ def page_tree_gen(space):
     for page in pages:
         pageObj = {}
         pageObj['id'] = page.id
-        if page.parent == '':
+        if page.parent is None:
             pageObj['parent'] = '#'
             pageObj['state'] = {'opened': True}
         else:
             pageObj['parent'] = page.parent
-        if page.id == int(ref):
-            pageObj["state"] = {'opened': True, 'selected': True}
-        else:
-            pageObj["state"] = {'selected': False}
+            if page.id == int(ref_id):
+                pageObj["state"] = {'opened': True, 'selected': True}
+            else:
+                pageObj["state"] = {'selected': False}
         pageObj['text'] = page.title
-        pageObj['a_attr'] = {'href': f'/page?id={page.id}', 'target': '_self'}
         tree_structure.append(pageObj)
 
     return dumps(tree_structure)

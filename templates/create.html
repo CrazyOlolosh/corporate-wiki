@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="static/richtexteditor/rte_theme_default.css" />
 <script type="text/javascript" src="static/richtexteditor/rte.js"></script>
 <script type="text/javascript" src='static/richtexteditor/plugins/all_plugins.js'></script>
+<meta data-action="{{action}}">
 
 <div class="min-h-full">
     {% include "navbar.html" %}
@@ -52,6 +53,34 @@
             </form>
             <script type="text/javascript">
                 var editor1 = new RichTextEditor("#post");
+                let action = $('meta[data-action]').attr('data-action');
+                if (action == 'edit') {
+                    editor1.setHTMLCode("{{ text|safe }}");
+                }
+            </script>
+            <script>
+                $(document).ready(function() {
+                    let space_select = document.getElementById('space');
+                    console.log(space_select);
+                    let parent_select = document.getElementById("parent");
+                    console.log(parent_select);
+
+                    space_select.onchange = function() {
+                        space = space_select.value;
+
+                        fetch('/tree/' + space).then(function(response) {
+                            response.json().then(function(data) {
+                                let optionHTML = "<option value=''>Без родителя</option>";
+
+                                for (let page of data) {
+                                    optionHTML += '<option value="' + page.id + '">' + page.text + '</option>';
+                                }
+                                console.log(optionHTML)
+                                parent_select.innerHTML = optionHTML;
+                            });
+                        });
+                    }
+                });
             </script>
         </div>
     </main>

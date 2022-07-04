@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
+from elasticsearch import Elasticsearch
 
 from flask_login import (
     UserMixin,
@@ -23,8 +24,10 @@ db = SQLAlchemy(session_options={'autocommit': True})
 migrate = Migrate()
 bcrypt = Bcrypt()
 
+
 load_dotenv()
 DATABASE_URI = os.environ.get("DATABASE_URI")
+ELASTICSEARCH_URI = os.environ.get("ELASTICSEARCH_URI")
 
 
 def create_app():
@@ -34,6 +37,8 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+    app.elasticsearch = Elasticsearch(ELASTICSEARCH_URI)\
+        if ELASTICSEARCH_URI else None
 
     login_manager.init_app(app)
     db.init_app(app)

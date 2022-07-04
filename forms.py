@@ -6,11 +6,15 @@ from wtforms import (
     DateField,
     TextAreaField,
     SubmitField,
-    SelectField
+    SelectField,
+    
 )
 
+from flask import request
+from flask_babel import _, lazy_gettext as _l
+
 from flask_wtf import FlaskForm
-from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp, Optional
+from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp, Optional, DataRequired
 import email_validator
 from flask_login import current_user
 from wtforms import ValidationError, validators
