@@ -40,7 +40,7 @@ RTE_DefaultConfig.showStatistics = true; //Specifies whether to display the cont
 RTE_DefaultConfig.showSelectedBlock = true;    //show selected paragraph as [__rte_select_block]{...}
 RTE_DefaultConfig.focusOnLoad = false; // Specifies whether the editor grabs focus when the page loads. If this property is set to true then the editor will take focus, if it is set to false it will not.
 RTE_DefaultConfig.allowScriptCode = false; //Specifies whether to strip all script elements and script contents from the html to prevent javaScript injection. When this property is set to false (the default) Rich Text Editor strips all script elements and script contents from the html.
-RTE_DefaultConfig.showFloatTextToolBar = false;  // Specifies whether to display the FloatTextToolBar.
+RTE_DefaultConfig.showFloatTextToolBar = true;  // Specifies whether to display the FloatTextToolBar.
 RTE_DefaultConfig.showFloatLinkToolBar = true; // Specifies whether to display the FloatLinkToolBar.
 RTE_DefaultConfig.showFloatImageToolBbar = true; // Specifies whether to display the FloatImageToolBbar.
 RTE_DefaultConfig.showFloatTableToolBar = true; // Specifies whether to display the FloatTableToolBar.
@@ -159,7 +159,7 @@ RTE_DefaultConfig.linkStyles = [["Margin10", "margin:10px"], ["Padding:10", "pad
 
 RTE_DefaultConfig.toolbar_default = "{bold,italic,underline,forecolor,backcolor}|{justifyleft,justifycenter,justifyright,justifyfull}|{insertorderedlist,insertunorderedlist,indent,outdent,insertblockquote,insertemoji}"
 	+ " #{paragraphs:toggle,fontname:toggle,fontsize:toggle,inlinestyle,lineheight}"
-	+ " / {removeformat,cut,copy,paste,delete,find}|{insertlink,insertchars,inserttable,insertimage,insertvideo,insertdocument,inserttemplate,insertcode}|{preview,code,selectall}"
+	+ " / {removeformat,cut,copy,paste,delete,find}|{insertlink,unlink,insertanchor,insertchars,inserttable,insertimage,insertvideo,insertdocument,inserttemplate,insertcode}|{preview,code,selectall}"
 	+ "#{toggleborder,fullscreenenter,fullscreenexit,undo,redo,togglemore}"; // Default set of buttons that appears in the rich text editor's toolbar on desktop.
 
 RTE_DefaultConfig.toolbar_mobile = "{bold,italic,underline|fontname:toggle,fontsize:toggle,menu_paragraphop|forecolor,backcolor}"

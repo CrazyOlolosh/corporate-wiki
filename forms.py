@@ -7,7 +7,7 @@ from wtforms import (
     TextAreaField,
     SubmitField,
     SelectField,
-    
+    SelectMultipleField
 )
 
 from flask import request
@@ -64,3 +64,12 @@ class post_form(FlaskForm):
     post = TextAreaField('Основной текст', validators=[InputRequired()])
     space = SelectField('Пространство', choices=[])
     parent = SelectField('Родитель', choices=[])
+
+
+class comment_form(FlaskForm):
+    text = TextAreaField("Комментарии", render_kw={'placeholder': 'Напишите Ваш комментарий...', 'rows': 4}, validators=[InputRequired()])
+
+
+class permission_form(FlaskForm):
+    pages = SelectMultipleField("Запрещенные страницы", choices=[])
+    spaces = SelectMultipleField("Разрешенные пространства", choices=[])

@@ -8,14 +8,14 @@
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
                         <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-                        <a href="./" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
+                        <a href="./" class="{% if action == 'main' %}bg-gray-900 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %} px-3 py-2 rounded-md text-sm font-medium"
                             aria-current="page">Главная</a>
 
                         <a href="./spaces"
-                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Пространства</a>
+                            class="{% if action == 'space' %}bg-gray-900 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %} px-3 py-2 rounded-md text-sm font-medium">Пространства</a>
 
                         <a href="./create"
-                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Создать
+                            class="{% if action == 'create' %}bg-gray-900 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %} px-3 py-2 rounded-md text-sm font-medium">Создать
                             +</a>
                     </div>
                 </div>
@@ -28,8 +28,13 @@
                                 <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
                             </svg>
                         </span>
-
-                        <input type="text" class="w-full py-1 pl-10 pr-4 text-gray-700 placeholder-gray-600 bg-white border-b border-gray-600 dark:placeholder-gray-300 dark:focus:border-gray-300 lg:w-56 lg:border-transparent dark:bg-gray-800 dark:text-gray-300 focus:outline-none focus:border-gray-600 rounded-md" placeholder="Поиск">
+                        <div class="search_box">
+                            <input id="search-bar" type="text" class="w-full py-1 pl-10 pr-4 text-gray-700 placeholder-gray-600 bg-white border-b border-gray-600 dark:placeholder-gray-300 dark:focus:border-gray-300 lg:w-56 lg:border-transparent dark:bg-gray-800 dark:text-gray-300 focus:outline-none focus:border-gray-600 rounded-md" placeholder="Поиск">
+                            <div class="absolute  bg-gray-600 text-gray-300">
+                                <table id="search_box-result" class="w-full">
+                                </table>
+                            </div>
+                        </div>
                     </div>
                     <button type="button"
                         class="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
@@ -44,16 +49,16 @@
 
                     <!-- Profile dropdown -->
                     <div class="ml-3 relative">
-                        <div>
-                            <button type="button" onclick="dropdownHandler(this)"
-                                class="max-w-xs bg-gray-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+
+                            <div
+                                class="profile-dropdown max-w-xs bg-gray-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
                                 id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                                 <span class="sr-only">Open user menu</span>
                                 <img class="h-8 w-8 rounded-full"
                                     src="{{current_user.user_pic}}"
                                     alt="">
-                            </button>
                         </div>
+
 
                         <!--
                 Dropdown menu, show/hide based on menu state.
@@ -65,7 +70,7 @@
                 From: "transform opacity-100 scale-100"
                 To: "transform opacity-0 scale-95"
             -->
-                        <div class="z-30 hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        <div class="dropdown-menu hidden z-30 origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
                             role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button"
                             tabindex="-1">
                             <!-- Active: "bg-gray-100", Not Active: "" -->
@@ -162,8 +167,48 @@
     </div>
 </nav>
 <script>
-    function dropdownHandler(element) {
-        let single = $(element).closest("div").next();
-        $(single).toggleClass("hidden");
-    }
+    $(document).ready(function(){
+        // Show hide popover
+        $("#user-menu-button").click(function(){
+            $(".dropdown-menu").toggleClass("hidden");
+        });
+    });
+
+    $(document).on("click", function(event){
+        var $trigger = $(".profile-dropdown");
+        if($trigger !== event.target && !$trigger.has(event.target).length){
+            $(".dropdown-menu").addClass("hidden");
+        }            
+    });
+</script>
+<script>
+    $(document).ready(function() {	
+	var $result = $('#search_box-result');
+	
+	$('#search-bar').on('keyup', function(){
+		var search = $(this).val();
+		if ((search != '') && (search.length > 2)){
+			$.ajax({
+				type: "GET",
+				url: "/search/"+search,
+                dataType: 'json',
+				success: function(resp){
+                    $result.empty();
+                    $.each(resp, function() {
+                        $result.append('<tr><td class="search_result-name my-1 px-2 whitespace-nowrap text-clip border-t-2 border-gray-700 w-full h-full hover:bg-purple-600"><a class="w-full h-full" href="page?id='+ this.id +'"><div style="height:100%;width:100%">' + this.title + '</div></a></td></tr>');
+                    });
+					if(resp != ''){	
+						$result.fadeIn();
+					} else {
+						$result.fadeOut(100);
+					}
+				}
+			});
+		 } else {
+			$result.html('');
+			$result.fadeOut(100);
+		 }
+	});
+	
+});
 </script>

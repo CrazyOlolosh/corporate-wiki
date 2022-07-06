@@ -15,7 +15,8 @@ from flask import (
 
 from datetime import datetime, timedelta
 import time
-from sqlalchemy import desc
+from sqlalchemy import desc, and_, not_
+from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import (
     IntegrityError,
     DataError,
@@ -38,8 +39,8 @@ from flask_login import (
 )
 
 from app import create_app, db, login_manager, bcrypt
-from models import Spaces, User, Page
-from forms import login_form, register_form, post_form
+from models import Spaces, User, Page, Versions, Comments
+from forms import comment_form, login_form, register_form, post_form, permission_form
 
 
 import threading
@@ -69,23 +70,32 @@ def session_handler():
 
 @app.route("/", methods=("GET", "POST"), strict_slashes=False)
 def index():
-    db.session.begin()
-    spaces_raw = Spaces.query.all()
-    db.session.close()
+    if current_user.is_authenticated:
+        db.session.begin()
+        
+        if current_user.allowed_spaces:
+            s_list = current_user.allowed_spaces[1:-1].split(',')
+            print(s_list)
+            spaces_raw = Spaces.query.filter(Spaces.id.in_(s_list)).all()
+        else:
+            spaces_raw = Spaces.query.all()
+        db.session.close()
 
-    spaces = [
-        {
-            'id': space.id,
-            'parrent': space.parent,
-            'name': space.name,
-            'image': space.logo,
-            'members': space.members,
-            'description': space.description,
-            'homepage': space.homepage,
-        }
-        for space in spaces_raw
-    ]
-    return render_template("index.html", title="Home", spaces=spaces)
+        spaces = [
+            {
+                'id': space.id,
+                'parrent': space.parent,
+                'name': space.name,
+                'image': space.logo,
+                'members': space.members,
+                'description': space.description,
+                'homepage': space.homepage,
+            }
+            for space in spaces_raw
+        ]
+    else:
+        spaces = []
+    return render_template("index.html", title="Home", spaces=spaces, action='main')
 
 
 @app.route("/login", methods=("GET", "POST"), strict_slashes=False)
@@ -191,19 +201,30 @@ def post():
         space_default = ref_page.space
         parent_default = ref_page.parent
         form = post_form(space=space_default, parent=parent_default)
-        form.parent.choices = [(page.id, page.title) for page in Page.query.filter(Page.space == space_default).order_by(Page.parent, Page.id).all()]
+        if current_user.forbidden_pages != '{}':
+            p_list = current_user.forbidden_pages[1:-1].split(',')
+            parent_choices = [(page.id, page.title) for page in Page.query.filter(and_(Page.space == space_default, Page.id.not_.in_(p_list))).order_by(Page.parent, Page.id).all()]
+        else:
+            parent_choices = [(page.id, page.title) for page in Page.query.filter(Page.space == space_default).order_by(Page.parent, Page.id).all()]
+        parent_choices.insert(0, (None, 'Без родителя'))
+        form.parent.choices = parent_choices
     else:
         form = post_form()
 
-    form.space.choices = [(space.id, space.name) for space in Spaces.query.order_by(Spaces.parent, Spaces.id).all()]
+    if current_user.allowed_spaces:
+        s_list = current_user.allowed_spaces[1:-1].split(',')
+        form.space.choices = [(space.id, space.name) for space in Spaces.query.filter(Spaces.id.in_(s_list)).order_by(Spaces.parent, Spaces.id).all()]
+    else:
+        form.space.choices = [(space.id, space.name) for space in Spaces.query.order_by(Spaces.parent, Spaces.id).all()]
 
     if form.is_submitted():
         text = form.post.data
         text = text.replace('\n','')
+        text = text.replace('\\n','')
+        if '\n' in text:
+            print('Catch newline!')
         title = form.heading.data
-        print(title)
         parent = form.parent.data
-        print(parent)
         if parent == '':
             parent is None
         space = form.space.data
@@ -222,10 +243,17 @@ def post():
         )
 
         db.session.add(new_page)
-        db.session.commit()
-
+       
         page = Page.query.filter(Page.author == current_user.username).order_by(desc(Page.date)).first()
         page_id = page.id
+        post_text_soup = BeautifulSoup(text, "html.parser")
+        post_text = post_text_soup.text
+        post = {
+            'text': post_text,
+        }
+        es_resp = app.elasticsearch.index(index="posts", id=page_id, body=post)
+        print(es_resp)
+        db.session.commit()
         db.session.close()
 
         return redirect(url_for('page', id=page_id))
@@ -236,32 +264,100 @@ def post():
 @app.route('/edit', methods=("GET", "POST"), strict_slashes=False)
 @login_required
 def edit():
-    id = request.args['id']
-    data = Page.query.get(id)
-    form = post_form(space=data.space, parent=data.parent)
-    form.heading.data = data.title
-    gen_parent_choices = [(page.id, page.title) for page in Page.query.filter(Page.space == data.space).order_by(Page.parent, Page.id).all()]
-    print(gen_parent_choices)
-    parent_choices = []
-    form.parent.choices = [(page.id, page.title) for page in Page.query.filter(Page.space == data.space).order_by(Page.parent, Page.id).all()]
-    form.space.choices = [(space.id, space.name) for space in Spaces.query.order_by(Spaces.parent, Spaces.id).all()]
+    if request.method == "GET":
+        id = request.args['id']
 
-    page_text = data.text
-    # page_text = page_text.replace('<br />','')
-    # page_text = re.sub(r'\n','', page_text)
+    if request.method == "POST":
+        ref = request.referrer.split('/')[-1]
+        if '?id=' in ref:
+            id = ref.split('id=')[-1]
+    
+    page = Page.query.get(id)
+    form = post_form(space=page.space, parent=page.parent)
+    form.heading.data = page.title
+    parent_choices = [(page_r.id, page_r.title) for page_r in Page.query.filter(Page.space == page.space).order_by(Page.parent, Page.id).all()]
+    parent_choices.insert(0, (None, 'Без родителя'))
+    form.parent.choices = parent_choices
+
+    if current_user.allowed_spaces:
+        s_list = current_user.allowed_spaces[1:-1].split(',')
+        form.space.choices = [(space.id, space.name) for space in Spaces.query.filter(Spaces.id.in_(s_list)).order_by(Spaces.parent, Spaces.id).all()]
+    else:
+        form.space.choices = [(space.id, space.name) for space in Spaces.query.order_by(Spaces.parent, Spaces.id).all()]
+
+    page_text = page.text
     page_text = page_text.replace('"','\\"')
-    # if re.search(r'\n', page_text):
-    #     print('Catch')
-    page_title = data.title
+    page_text = page_text.replace('\n','')
+    if '\n' in page_text:
+        print('!Catch!')
+    page_title = page.title
 
-    return render_template('create.html', action="edit", form=form, title="Редактирование", text=page_text, p_title=page_title)
+    versions_list = [
+    {
+        'id': version.id,
+        'version': version.version,
+        'author': version.v_author.name,
+        'time': datetime.fromtimestamp(int(version.time)).strftime('%Y-%m-%d %H:%M')
+    } 
+    for version in Versions.query.filter(Versions.page_id == id).order_by(Versions.version).all()]
 
 
-@app.route('/page', methods=("GET", "DELETE", "PATCH"))
+    if form.is_submitted():
+        text = form.post.data
+        text = text.replace('\n','')
+        text = text.replace('\\n','')
+        if '\n' in text:
+            print('!Catch!')
+        title = form.heading.data
+        parent = form.parent.data
+        if parent == '':
+            parent is None
+        space = form.space.data
+        limitations = ''
+
+        date = int(time.time())
+        db.session.begin()
+        ver_num = len(Versions.query.filter(Versions.page_id == page.id).all())
+        new_backup = Versions(
+            page_id=page.id,
+            version=ver_num + 1,
+            title=page.title,
+            text=page.text.replace('\n',''),
+            author=current_user.username,
+            time=date
+        )
+
+        page.title = title
+        page.text = text
+        page.space = space
+        page.parent = parent
+
+        db.session.add(new_backup)
+        
+        post_text_soup = BeautifulSoup(text, "html.parser")
+        post_text = post_text_soup.text
+        post = {
+            'text': post_text,
+        }
+        # es_resp = app.elasticsearch.update(index="posts", id=page.id, body=post)
+        # print(es_resp)
+        db.session.commit()
+        db.session.close()
+        
+
+        return redirect(url_for('page', id=id))
+
+    return render_template('create.html', action="edit", form=form, title="Редактирование", text=page_text, p_title=page_title, versions=versions_list)
+
+
+@app.route('/page', methods=("GET", "POST", "DELETE", "PATCH"))
 @login_required
 def page():
-    id = request.args['id']
+    
+    comment = comment_form()
     if request.method == "GET":
+        id = request.args['id']
+        
         try:
             page_note = Page.query.get(id)
             title = page_note.title
@@ -269,16 +365,48 @@ def page():
             space = page_note.space
         except AttributeError:
             return render_template('404.html')
+        
+        comments_list = [
+            {
+                'text': comment.text,
+                'author': comment.c_author.name,
+                'author_img': comment.c_author.user_pic,
+                'author_active': comment.c_author.is_active,
+                'time': datetime.fromtimestamp(int(comment.time)).strftime('%Y-%m-%d %H:%M')
+            } 
+            for comment in Comments.query.filter(Comments.page_id == id).order_by(Comments.time).all()]
 
-        return render_template('page.html', id=id, title=title, text=text, space=space)
+        return render_template('page.html', id=id, title=title, text=text, space=space, comment=comment, comments=comments_list, action='page')
+
+    if comment.is_submitted():
+        ref = request.referrer.split('/')[-1]
+        if 'page?id=' in ref:
+            id = ref.split('id=')[-1]
+        date = int(time.time())
+        com_text = comment.text.data
+        page_id = id
+        author = current_user.id
+        c_time = date
+
+        db.session.begin()
+        new_comment = Comments(page_id=page_id, author=author, text=com_text, time=c_time)
+        db.session.add(new_comment)
+        db.session.commit()
+        db.session.close()
+
+        return redirect(url_for('page', id= id))
 
 
 @app.route('/spaces', methods=("GET", "POST", "DELETE", "PATCH"))
 @login_required
 def spaces():
     if request.method == "GET":
-        
-        spaces_raw = Spaces.query.all()
+        if current_user.allowed_spaces:
+            s_list = current_user.allowed_spaces[1:-1].split(',')
+            print(s_list)
+            spaces_raw = Spaces.query.filter(Spaces.id.in_(s_list)).all()
+        else:
+            spaces_raw = Spaces.query.all()
 
 
         spaces = [
@@ -294,7 +422,7 @@ def spaces():
             for space in spaces_raw
         ]
 
-        return render_template("spaces.html", title="Пространства", spaces=spaces)
+        return render_template("spaces.html", title="Пространства", spaces=spaces, action='space')
 
 
 @app.route('/tree/<space>')
@@ -306,7 +434,12 @@ def page_tree_gen(space):
     else:
         ref_id = 0
 
-    pages = Page.query.filter(Page.space == space).all()
+    if current_user.forbidden_pages != '{}':
+        p_list = current_user.forbidden_pages[1:-1].split(',')
+        print(p_list)
+        pages = Page.query.filter(and_(Page.space == space, not_(Page.id.in_(p_list)))).all()
+    else:
+        pages = Page.query.filter(and_(Page.space == space)).all()
 
     tree_structure = []
 
@@ -326,6 +459,103 @@ def page_tree_gen(space):
         tree_structure.append(pageObj)
 
     return dumps(tree_structure)
+
+
+@app.route('/search/<query>', methods=["GET"])
+def search(query):
+    db.session.begin()
+    es_resp = app.elasticsearch.search(index='posts', body={'query': {'match': {'text': query}}})
+    result = []
+    for hit in es_resp['hits']['hits']:
+        page_id = hit['_id']
+        page = Page.query.get(page_id)
+        title = page.title
+        result.append({'id': page_id, 'title': title[:30]})
+
+    db.session.close()
+    if len(result) > 0:
+        return dumps(result, ensure_ascii=False)
+    else:
+        return
+
+
+@app.route('/esreindex')
+def esreindex():
+    db.session.begin()
+    posts = Page.query.all()
+    for post in posts:
+        id = post.id
+        post_text_soup = BeautifulSoup(post.text, "html.parser")
+        post_text = post_text_soup.text
+        post = {
+            'text': post_text,
+        }
+        es_resp = app.elasticsearch.index(index="posts", id=id, body=post)
+        print(es_resp)
+    db.session.commit()
+    db.session.close()
+    return "Done"
+
+
+@app.route('/users_edit', methods=("GET", "POST"))
+@login_required
+def user_edit():
+    if 'Admin' in current_user.role:
+        user_list = [
+            {
+                'id': user.id,
+                'username': user.username,
+                'name': user.name,
+                'mail': user.email,
+                'role': user.role,
+                'user_pic': user.user_pic,
+                'confirmed': user.confirmed,
+                'last_online': datetime.fromtimestamp(int(user.last_online)).strftime('%Y-%m-%d %H:%M'),
+                'is_active': user.is_active,
+
+            } for user in User.query.all()
+        ]
+        return render_template('admin.html', users=user_list)
+    else:
+        return(url_for('index'))
+
+
+@app.route('/permissions_edit', methods=("GET", "POST"))
+@login_required
+def perm_edit():
+    if 'Admin' in current_user.role:
+        uid = request.args['id']
+        user = User.query.get(uid)
+        perm_form = permission_form()
+        perm_form.spaces.choices = [(space.id, space.name) for space in Spaces.query.order_by(Spaces.id, Spaces.parent).all()]
+        if user.allowed_spaces:
+            perm_form_spaces = user.allowed_spaces
+            perm_form_spaces = perm_form_spaces[1:-1].split(',')
+        else:
+            perm_form_spaces = []
+        
+        perm_form.pages.choices = [(page_r.id, page_r.title) for page_r in Page.query.order_by(Page.parent, Page.id).all()]
+        if user.forbidden_pages:
+            perm_form.spaces.default = [user.forbidden_pages]
+        
+        if perm_form.is_submitted():
+            new_spaces = list(perm_form.spaces.data)
+            print(new_spaces)
+            new_pages = perm_form.pages.data
+            print(new_pages)
+            db.session.begin()
+            user.allowed_spaces = new_spaces
+            user.forbidden_pages = new_pages
+            db.session.commit()
+            db.session.close()
+            
+            return redirect(url_for('user_edit'))
+
+        return render_template('perm.html', perm=perm_form, def_spaces=perm_form_spaces)
+    
+    else:
+        return(url_for('index'))
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5003, debug=True)

@@ -2,12 +2,12 @@
 {% block title%} {{ title }} {% endblock %}
 {% block content%}
 <meta data-user="{{current_user.username}}">
-<div id="content" >
+<div id="content" class="h-full">
 
 
     {% if current_user.is_authenticated %}
 
-    <div class="min-h-full">
+    <div class="min-h-full pb-52">
         {% include "navbar.html" %}
 
         <header class="bg-white dark:bg-slate-700 shadow">
@@ -16,7 +16,7 @@
             </div>
         </header>
         <main>
-            <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 flex justify-between">
+            <div class="max-w-7xl mx-auto pt-6 pb-10 sm:px-6 lg:px-8 flex justify-between">
                 <div class="w-full lg:w-6/12 mr-10">
                     <label class="text-xl font-bold dark:text-gray-200 ml-4 lg:ml-auto my-2">Пространства</label>
                     <div class="container grid max-w-screen-xl gap-3 lg:gap-8 lg:grid-cols-2 lg:grid-rows-2 lg:mt-5">
@@ -41,13 +41,14 @@
                     </div>
                 </div>  
                 <div class="w-full lg:w-5/12">
-
+                    <label class="text-xl font-bold dark:text-gray-200 ml-4 lg:ml-auto my-2">Активность</label>
                 </div>
 
             </div>
         </main>
+        
     </div>
-
+    {% include "footer.html" %}
     <script>
         $(document).ready(function() {
             $("img").each(function() {
@@ -85,4 +86,7 @@
     {% endif %}
 
 </div>
+{% if current_user.is_authenticated %}
+
+{% endif %}
 {% endblock %}
