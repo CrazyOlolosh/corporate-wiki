@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from elasticsearch import Elasticsearch
+from flask_mail import Mail
 
 from flask_login import (
     UserMixin,
@@ -23,6 +24,7 @@ login_manager.login_message_category = "info"
 db = SQLAlchemy(session_options={'autocommit': True})
 migrate = Migrate()
 bcrypt = Bcrypt()
+mail = Mail()
 
 
 load_dotenv()
@@ -44,6 +46,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
+    mail.init_app(app)
 
     return app
 

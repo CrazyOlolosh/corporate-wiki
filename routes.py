@@ -15,7 +15,7 @@ from flask import (
 
 from datetime import datetime, timedelta
 import time
-from sqlalchemy import desc, and_, not_
+from sqlalchemy import desc, and_, not_, null
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import (
     IntegrityError,
@@ -38,7 +38,9 @@ from flask_login import (
     login_required,
 )
 
-from app import create_app, db, login_manager, bcrypt
+from flask_mail import Message
+
+from app import create_app, db, login_manager, bcrypt, mail
 from models import Spaces, User, Page, Versions, Comments
 from forms import comment_form, login_form, register_form, post_form, permission_form
 
@@ -203,7 +205,7 @@ def post():
         form = post_form(space=space_default, parent=parent_default)
         if current_user.forbidden_pages != '{}':
             p_list = current_user.forbidden_pages[1:-1].split(',')
-            parent_choices = [(page.id, page.title) for page in Page.query.filter(and_(Page.space == space_default, Page.id.not_.in_(p_list))).order_by(Page.parent, Page.id).all()]
+            parent_choices = [(page.id, page.title) for page in Page.query.filter(and_(Page.space == space_default, not_(Page.id.in_(p_list)))).order_by(Page.parent, Page.id).all()]
         else:
             parent_choices = [(page.id, page.title) for page in Page.query.filter(Page.space == space_default).order_by(Page.parent, Page.id).all()]
         parent_choices.insert(0, (None, 'Без родителя'))
@@ -224,9 +226,12 @@ def post():
         if '\n' in text:
             print('Catch newline!')
         title = form.heading.data
-        parent = form.parent.data
-        if parent == '':
-            parent is None
+        print(form.parent.data)
+        if form.parent.data == "None":
+            parent = None
+        else:
+            parent = form.parent.data
+        print(type(parent))
         space = form.space.data
         limitations = ''
 
@@ -243,7 +248,9 @@ def post():
         )
 
         db.session.add(new_page)
+        db.session.commit()
        
+        db.session.begin()
         page = Page.query.filter(Page.author == current_user.username).order_by(desc(Page.date)).first()
         page_id = page.id
         post_text_soup = BeautifulSoup(text, "html.parser")
@@ -265,7 +272,10 @@ def post():
 @login_required
 def edit():
     if request.method == "GET":
-        id = request.args['id']
+        try:
+            id = request.args['id']
+        except KeyError:
+            return render_template(url_for('page_not_found'))
 
     if request.method == "POST":
         ref = request.referrer.split('/')[-1]
@@ -310,8 +320,8 @@ def edit():
             print('!Catch!')
         title = form.heading.data
         parent = form.parent.data
-        if parent == '':
-            parent is None
+        if parent == 'None':
+            parent = None
         space = form.space.data
         limitations = ''
 
@@ -327,6 +337,9 @@ def edit():
             time=date
         )
 
+        print(page.p_author.email)
+        msg = Message(subject=f'Изменение страницы {page.title}', recipients=[page.p_author.email], body='В созданной вами станице произошли изменения', sender='notify@kindofconfluence.com')  
+
         page.title = title
         page.text = text
         page.space = space
@@ -339,24 +352,63 @@ def edit():
         post = {
             'text': post_text,
         }
-        # es_resp = app.elasticsearch.update(index="posts", id=page.id, body=post)
-        # print(es_resp)
+        es_resp = app.elasticsearch.index(index="posts", id=page.id, body=post)
+        print(es_resp)
         db.session.commit()
         db.session.close()
-        
+
+        # mail.send(msg)  # Unable from localhost
 
         return redirect(url_for('page', id=id))
 
     return render_template('create.html', action="edit", form=form, title="Редактирование", text=page_text, p_title=page_title, versions=versions_list)
 
 
-@app.route('/page', methods=("GET", "POST", "DELETE", "PATCH"))
+@app.route('/preview', methods=("GET", "POST"), strict_slashes=False)
+@login_required
+def preview():
+    pre_id = request.args['id']
+    version = Versions.query.get(pre_id)
+    title = version.title
+    pid = version.page_id
+    text = version.text
+    return render_template('preview.html', id=pid, title=title, text=text, action='preview')
+
+
+@app.route('/restore', methods=("GET", "POST"), strict_slashes=False)
+@login_required
+def restore():
+    if 'edit?id=' in request.referrer:
+        pre_id = request.args['id']
+        db.session.begin()
+        # Update current page from version and remove newer
+        version = Versions.query.get(pre_id)
+        page = Page.query.get(version.page_id)
+        
+        page.text = version.text
+        page.title = version.title
+
+        remove_versions = Versions.query.filter(and_(Versions.version > version.version, Versions.page_id == version.page_id))
+        db.session.delete(remove_versions)
+
+        db.session.commit()
+        db.session.close()
+        
+        return render_template(url_for('page', id=version.page_id))
+    else:
+        return render_template(url_for('index'))
+
+
+@app.route('/page', methods=("GET", "POST"))
 @login_required
 def page():
     
     comment = comment_form()
     if request.method == "GET":
-        id = request.args['id']
+        try:
+            id = request.args['id']
+        except KeyError:
+            return render_template('404.html')
         
         try:
             page_note = Page.query.get(id)
@@ -403,7 +455,6 @@ def spaces():
     if request.method == "GET":
         if current_user.allowed_spaces:
             s_list = current_user.allowed_spaces[1:-1].split(',')
-            print(s_list)
             spaces_raw = Spaces.query.filter(Spaces.id.in_(s_list)).all()
         else:
             spaces_raw = Spaces.query.all()
@@ -446,7 +497,7 @@ def page_tree_gen(space):
     for page in pages:
         pageObj = {}
         pageObj['id'] = page.id
-        if page.parent is None:
+        if page.parent == 0 or page.parent is None:
             pageObj['parent'] = '#'
             pageObj['state'] = {'opened': True}
         else:
@@ -546,6 +597,19 @@ def perm_edit():
             db.session.begin()
             user.allowed_spaces = new_spaces
             user.forbidden_pages = new_pages
+            db.session.commit()
+
+            #Space members recount
+            spaces = Spaces.query.all()
+            users = User.query.all()
+            db.session.begin()
+            for space in spaces:
+                counter = 0
+                for user in users:
+                    if str(space.id) in user.allowed_spaces[1:-1].split(','):
+                        counter += 1
+                space.members = counter
+
             db.session.commit()
             db.session.close()
             

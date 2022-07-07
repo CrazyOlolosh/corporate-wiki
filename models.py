@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, null
 from app import db
 # from search import add_to_index, remove_from_index, query_index
 from flask_login import UserMixin
@@ -62,6 +62,7 @@ class User(UserMixin, db.Model):
     comm_rel = db.relationship("Comments", backref="c_author")
     ver_rel = db.relationship("Versions", backref="v_author")
     space_rel = db.relationship("Versions", backref="s_author")
+    page_rel = db.relationship("Page", backref="p_author")
 
     def __init__(self, username, name, email, pwd, role=None, user_pic=None, confirmed=False, fav_spaces=None, allowed_spaces=None, fav_pages=None, forbidden_pages=None, last_online=0):
         self.username = username
@@ -85,11 +86,11 @@ class Page(db.Model):
     limitations = db.Column(db.String(50))
     date = db.Column(db.Integer)
     children = db.relationship("Page")
-    space_rel = db.relationship("Spaces", backref='space')
-    user_rel = db.relationship("User", backref='user')
-    version_rel = db.relationship("Versions", backref='origin_page')
+    # space_rel = db.relationship("Spaces", backref='space')
+    # user_rel = db.relationship("User", backref='user')
+    # version_rel = db.relationship("Versions", backref='origin_page')
 
-    def __init__(self, title, author, text, parent, space, limitations, date):
+    def __init__(self, title, author, text, limitations, date, parent=null, space=None):
         self.title = title
         self.author = author
         self.text = text
@@ -137,7 +138,7 @@ class Versions(db.Model):
     text = db.Column(db.String(), nullable=False)
     author = db.Column(db.String(80), ForeignKey('user.username'), nullable=False)
     time = db.Column(db.Integer, nullable=False)
-    page_rel = db.relationship("Page", backref='versions')
+    v_page_rel = db.relationship("Page", backref='versions')
 
 
     def __init__(self, page_id, version, title, author, text, time):
