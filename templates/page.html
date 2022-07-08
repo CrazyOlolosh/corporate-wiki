@@ -2,6 +2,7 @@
 {% block title %} Page - {{ title }} {% endblock %}
 {% block content %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.min.css"/>
 <link rel="stylesheet" href="static/richtexteditor/rte_theme_default.css" />
 <meta data-space="{{space}}" data-id="{{id}}">
@@ -19,11 +20,11 @@
 
     <main>
         <div class="flex">
-            <div id="sidebar" class="">
+            <div id="sidebar" class="mr-0">
                 {% include "sidebar.html" %}
             </div>
             <div id="main" class="mx-auto">
-                <div id="main-text" class="lg:w-[1000px] lg:max-w-[1500px] mx-auto py-6 sm:px-6 lg:px-10 bg-white">
+                <div id="main-text" class="lg:w-[1200px] lg:max-w-[1500px] mx-auto py-6 sm:px-6 lg:px-10 bg-white">
                     {{ text|safe }}
                 </div>
                 <div class="my-10 mx-7">
@@ -73,6 +74,11 @@
 <script>
     $(document).ready(function () {
         $("p").each(function () {
+            if ($(this).css("text-align") == "center") {
+                $(this).css("text-align", "-webkit-center");
+            }
+        });
+        $("div").each(function () {
             if ($(this).css("text-align") == "center") {
                 $(this).css("text-align", "-webkit-center");
             }

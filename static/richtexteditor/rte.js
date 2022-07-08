@@ -155,11 +155,11 @@ RTE_DefaultConfig.imageStyles = [["Border", "border: 1px solid #ddd; border-radi
 RTE_DefaultConfig.linkStyles = [["Margin10", "margin:10px"], ["Padding:10", "padding:10px"], ["BigText", "font-size:36px"]]; // Default CSS styles for link Styles dropdown. 
 
 
-
+RTE_DefaultConfig.svgCode_anchor = '<svg viewBox="-2 -2 20 20" fill="#5F6368" style="width: 100%; height: 100%;"><path fill-rule="evenodd" d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1z" clip-rule="evenodd"></path></svg>';
 
 RTE_DefaultConfig.toolbar_default = "{bold,italic,underline,forecolor,backcolor}|{justifyleft,justifycenter,justifyright,justifyfull}|{insertorderedlist,insertunorderedlist,indent,outdent,insertblockquote,insertemoji}"
 	+ " #{paragraphs:toggle,fontname:toggle,fontsize:toggle,inlinestyle,lineheight}"
-	+ " / {removeformat,cut,copy,paste,delete,find}|{insertlink,unlink,insertanchor,insertchars,inserttable,insertimage,insertvideo,insertdocument,inserttemplate,insertcode}|{preview,code,selectall}"
+	+ " / {removeformat,cut,copy,paste,delete,find}|{insertlink,unlink,anchor,insertchars,inserttable,insertimage,insertvideo,insertdocument,inserttemplate,insertcode}|{preview,code,selectall}"
 	+ "#{toggleborder,fullscreenenter,fullscreenexit,undo,redo,togglemore}"; // Default set of buttons that appears in the rich text editor's toolbar on desktop.
 
 RTE_DefaultConfig.toolbar_mobile = "{bold,italic,underline|fontname:toggle,fontsize:toggle,menu_paragraphop|forecolor,backcolor}"

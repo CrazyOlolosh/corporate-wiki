@@ -16,6 +16,7 @@ from flask_login import (
 import os
 from dotenv import load_dotenv
 
+
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
 login_manager.login_view = "login"
@@ -30,12 +31,13 @@ mail = Mail()
 load_dotenv()
 DATABASE_URI = os.environ.get("DATABASE_URI")
 ELASTICSEARCH_URI = os.environ.get("ELASTICSEARCH_URI")
-
+UPLOAD_FOLDER = './static/uploads'
 
 def create_app():
     app = Flask(__name__)
 
     app.secret_key = "ea=n=K-t#LbH7[nvM']O`Gi4/C'>c="
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True

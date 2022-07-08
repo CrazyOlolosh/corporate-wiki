@@ -61,7 +61,6 @@ class User(UserMixin, db.Model):
     last_online = db.Column(db.Integer, default=0)
     comm_rel = db.relationship("Comments", backref="c_author")
     ver_rel = db.relationship("Versions", backref="v_author")
-    space_rel = db.relationship("Versions", backref="s_author")
     page_rel = db.relationship("Page", backref="p_author")
 
     def __init__(self, username, name, email, pwd, role=None, user_pic=None, confirmed=False, fav_spaces=None, allowed_spaces=None, fav_pages=None, forbidden_pages=None, last_online=0):
