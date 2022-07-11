@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title%} {{ title }} {% endblock %}
+{% block content%}
+<meta data-user="{{current_user.username}}">
+
+<div class="min-h-full pb-44">
+    {% include "navbar.html" %}
+    <header class="bg-white dark:bg-slate-700 shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-200">Профиль {{ current_user.name }}</h1>
+        </div>
+    </header>
+    <main class="mx-10 ">
+        <div class="flex justify-between my-10">
+            <div class="w-8/12">
+                <div class="font-medium">
+                    Список страниц
+                </div>
+                <div class="overflow-hidden overflow-x-none border border-gray-100 rounded mt-2">
+                   <table class="min-w-full text-sm divide-y divide-gray-200">
+                    <thead>
+                      <tr class="bg-gray-50">
+                        <th class="px-4 py-2 max-w-[300px] overflow-hidden font-medium text-left text-gray-900 whitespace-nowrap">Название</th>
+                        <th class="px-4 py-2 font-medium text-left text-gray-900 whitespace-nowrap">Дата создания</th>
+                        <th class="px-4 py-2 font-medium text-left text-gray-900 whitespace-nowrap">Последние правки</th>
+                        <th class="px-4 py-2 font-medium text-left text-gray-900 whitespace-nowrap">Автор правок</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 block">
+                        {% for article in list %} 
+                      <tr data-page="{{ article.id }}">
+                        <td class="px-4 py-2 max-w-[300px] overflow-hidden font-medium text-gray-900 whitespace-nowrap">{{article.title}}</td>
+                        <td class="px-4 py-2 text-gray-200 whitespace-nowrap">{{article.creation_date}}</td>
+                        <td class="px-4 py-2 text-gray-200 whitespace-nowrap">{{article.last_edit}}</td>
+                        <td class="px-4 py-2 text-gray-200 whitespace-nowrap">{{article.edit_author}}</td>
+                      </tr>
+                        {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                
+            </div>
+            <div class="w-3/12">
+                <div class="bg-slate-700 flex flex-col items-center rounded">
+                    <div class="mt-5">
+                        <img src="{{current_user.user_pic}}" class="w-40 rounded-full mb-4">
+                    </div>
+                    <div>
+                        {{current_user.name}} ({{current_user.username}})
+                    </div>
+                    <div class="mb-10">
+                        {{current_user.email}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+{% include "footer.html" %}
+
+{% endblock %}

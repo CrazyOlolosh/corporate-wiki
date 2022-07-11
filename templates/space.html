@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %} Page - {{ title }} {% endblock %}
+{% block content %}
+<meta data-id="{{id}}">
+
+<div class="min-h-full pb-44">
+    {% include "navbar.html" %}
+    <header class="sticky top-0 z-20 bg-white dark:bg-slate-700 shadow">
+        <div class="sticky max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-row items-center">
+            <img src="{{logo}}" class="w-9 h-9 mr-3"><h1 class="text-3xl font-bold text-gray-900 dark:text-gray-200"> Пространство "{{ title }}"</h1>
+        </div>
+    </header>
+
+    <main>
+        <div class="flex">
+            <div id="main" class="mx-auto w-[700px]">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="space-name mt-5 mb-3">
+                        {{ form.title.label(class_='label text-lg') }}
+                        {{ form.title(class_="form-control w-full") }}
+                    </div>
+                    <div class="flex flex-row flex-nowrap justify-between mb-3 ">
+                        <div>
+                            {{ form.parent.label(class_='label text-lg') }}
+                            {{ form.parent(class_="form-control") }}
+                        </div>
+                        <div>
+                            {{ form.homepage.label(class_='label text-lg ') }}
+                            {{ form.homepage(class_="form-control max-w-[350px]") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.img.label(class_='label text-lg') }}
+                        {{ form.img(class_="form-control w-full") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class_='label text-lg') }}
+                        {{ form.description(class_="form-control w-full") }}
+                    </div>
+                    <button type="submit" class="btn btn-block bg-purple-700 hover:bg-purple-800 mb-3 border-0 text-gray-200 dark:text-gray-900"> Сохранить </button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+{% include "footer.html" %}
+
+{% endblock %}

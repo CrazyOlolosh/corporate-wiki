@@ -14,6 +14,7 @@ from flask import request
 from flask_babel import _, lazy_gettext as _l
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp, Optional, DataRequired
 import email_validator
 from flask_login import current_user
@@ -73,3 +74,11 @@ class comment_form(FlaskForm):
 class permission_form(FlaskForm):
     pages = SelectMultipleField("Запрещенные страницы", choices=[])
     spaces = SelectMultipleField("Разрешенные пространства", choices=[])
+
+
+class space_form(FlaskForm):
+    title = StringField('Название пространства', validators=[InputRequired(), Length(max=100)])
+    homepage = SelectField('Домашняя страница', choices=[])
+    parent = SelectField('Родитель', choices=[])
+    description = TextAreaField("Описание", render_kw={'rows': 5}, validators=[InputRequired()])
+    img = FileField('Логотип пространства')

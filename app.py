@@ -32,6 +32,7 @@ load_dotenv()
 DATABASE_URI = os.environ.get("DATABASE_URI")
 ELASTICSEARCH_URI = os.environ.get("ELASTICSEARCH_URI")
 UPLOAD_FOLDER = './static/uploads'
+SPACE_IMG_FOLDER = './static/uploads/spaces'
 
 def create_app():
     app = Flask(__name__)

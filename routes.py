@@ -1,4 +1,3 @@
-from types import NoneType
 from flask import (
     Flask,
     render_template,
@@ -15,7 +14,7 @@ from flask import (
 
 from datetime import datetime, timedelta
 import time
-from sqlalchemy import desc, and_, not_, null
+from sqlalchemy import desc, and_, not_, null, or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import (
     IntegrityError,
@@ -41,9 +40,9 @@ from flask_login import (
 
 from flask_mail import Message
 
-from app import UPLOAD_FOLDER, create_app, db, login_manager, bcrypt, mail
+from app import UPLOAD_FOLDER, SPACE_IMG_FOLDER, create_app, db, login_manager, bcrypt, mail
 from models import Spaces, User, Page, Versions, Comments
-from forms import comment_form, login_form, register_form, post_form, permission_form
+from forms import comment_form, login_form, register_form, post_form, permission_form, space_form
 
 
 import threading
@@ -76,13 +75,15 @@ def session_handler():
 def index():
     if current_user.is_authenticated:
         db.session.begin()
-
+        if current_user.fav_spaces:
+            fav_list = current_user.fav_spaces[1:-1].split(",")
+        else:
+            fav_list = []
         if current_user.allowed_spaces:
             s_list = current_user.allowed_spaces[1:-1].split(",")
-            print(s_list)
-            spaces_raw = Spaces.query.filter(Spaces.id.in_(s_list)).all()
+            spaces_raw = Spaces.query.filter(Spaces.id.in_(s_list)).order_by(desc(Spaces.id.in_(fav_list))).all()
         else:
-            spaces_raw = Spaces.query.all()
+            spaces_raw = Spaces.query.order_by(desc(Spaces.id.in_(fav_list))).all()
         db.session.close()
 
         spaces = [
@@ -99,7 +100,10 @@ def index():
         ]
     else:
         spaces = []
-    return render_template("index.html", title="Home", spaces=spaces, action="main")
+
+    fav_list = dumps(fav_list)
+
+    return render_template("index.html", title="Home", spaces=spaces, action="main", fav=fav_list)
 
 
 @app.route("/login", methods=("GET", "POST"), strict_slashes=False)
@@ -622,15 +626,19 @@ def page():
         return redirect(url_for("page", id=id))
 
 
-@app.route("/spaces", methods=("GET", "POST", "DELETE", "PATCH"))
+@app.route("/spaces", methods=("GET", "POST"))
 @login_required
 def spaces():
     if request.method == "GET":
+        if current_user.fav_spaces:
+            fav_list = current_user.fav_spaces[1:-1].split(",")
+        else:
+            fav_list = []
         if current_user.allowed_spaces:
             s_list = current_user.allowed_spaces[1:-1].split(",")
-            spaces_raw = Spaces.query.filter(Spaces.id.in_(s_list)).all()
+            spaces_raw = Spaces.query.filter(Spaces.id.in_(s_list)).order_by(desc(Spaces.id.in_(fav_list))).all()
         else:
-            spaces_raw = Spaces.query.all()
+            spaces_raw = Spaces.query.order_by(desc(Spaces.id.in_(fav_list))).all()
 
         spaces = [
             {
@@ -646,9 +654,140 @@ def spaces():
         ]
 
         return render_template(
-            "spaces.html", title="Пространства", spaces=spaces, action="space"
+            "spaces.html", title="Пространства", spaces=spaces, action="space", fav=fav_list
         )
 
+
+@app.route("/space", methods=("GET", "POST"))
+@login_required
+def space():
+    if current_user.role == 'Admin':
+        sid = request.args['id']
+        space = Spaces.query.get(sid)
+
+        title = space.name
+        description = space.description
+        logo = space.logo
+        form = space_form(homepage=space.homepage, parent=space.parent)
+        if request.method == 'GET':
+            form.title.data = title
+            form.description.data = description
+        form.homepage.choices = [(page.id, page.title) for page in Page.query.filter(or_(Page.parent == None, Page.space == int(sid))).all()]
+        parent_choices = [(space.id, space.name) for space in Spaces.query.all()]
+        parent_choices.insert(0, (None, "Без родителя"))
+        form.parent.choices = parent_choices
+
+        if form.is_submitted():
+            ref = request.referrer.split("/")[-1]
+            if "space?id=" in ref:
+                sid = ref.split("id=")[-1]
+            n_title = form.title.data
+            
+            n_homepage = form.homepage.data
+            if n_homepage == "None":
+                n_homepage = None
+            n_parent = form.parent.data
+            
+            if n_parent == "None":
+                n_parent = None
+            
+            n_description = form.description.data
+            print(n_description)
+            
+            db.session.begin()
+            if form.img.data:
+                n_img = form.img.data
+                filename = secure_filename(n_img.filename)
+                print(filename)
+                pre_path = os.path.join(app.config["UPLOAD_FOLDER"])
+                path = uniquify(f"{pre_path}/{filename}")
+                filename = path.split("/")[-1]
+                n_img.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                img_path = f'{UPLOAD_FOLDER}/{filename}'
+                space.logo = img_path
+
+            space = Spaces.query.get(sid)
+            space.name = n_title
+            space.description = n_description
+            space.homepage = n_homepage
+            space.parent = n_parent
+            
+            db.session.commit()
+            db.session.close()
+
+            return redirect(url_for('spaces'))
+
+        return render_template('space.html', title=title, id=sid, form=form, logo=logo)
+    else:
+        return redirect(url_for('index'))
+
+
+@app.route("/profile", methods=("GET", "POST"))
+@login_required
+def profile():
+    list = []
+
+    for page in Page.query.filter(Page.author == current_user.username).all():
+        id = page.id,
+        creation_date = datetime.fromtimestamp(int(page.date)).strftime("%Y-%m-%d %H:%M")
+        last_ver = Versions.query.filter(Versions.page_id == id).order_by(desc(Versions.version)).first()
+        if last_ver is None:
+            last_edit = '-'
+            edit_author = '-'
+        else:
+            last_edit = datetime.fromtimestamp(int(last_ver.time)).strftime("%Y-%m-%d %H:%M")
+            edit_author = last_ver.author
+
+        item = {
+            'id': id,
+            'title': page.title,
+            'creation_date': creation_date,
+            'last_edit': last_edit,
+            'edit_author': edit_author,
+        }
+        list.append(item)
+
+    return render_template('profile.html', list=list)
+
+
+@app.route("/fav", methods=["POST"])
+@login_required
+def fav():
+    try:
+        sid = request.args['space']
+    except KeyError:
+        try:
+            pid = request.args['page']
+        except KeyError:
+            return render_template('404.html')
+    
+    if sid:
+        print(sid)
+        db.session.begin()
+        spaces = current_user.fav_spaces
+        if spaces is None or spaces == r'{}':
+            spaces = []
+        else:
+            spaces = spaces[1:-1].split(',')
+
+        if request.args['action'] == 'add':
+            print('add')
+            spaces.append(sid)
+            current_user.fav_spaces = spaces
+        elif request.args['action'] == 'remove':
+            print('remove')
+            spaces.remove(sid)
+            if spaces == ['']:
+                spaces = None
+            current_user.fav_spaces = spaces
+        print(spaces)
+        db.session.commit()
+        db.session.close()
+
+        return dumps({'status': 'done'})
+
+    if pid:
+        return dumps({'status': 'done'})
 
 @app.route("/tree/<space>")
 @login_required

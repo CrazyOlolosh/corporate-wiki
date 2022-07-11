@@ -93,7 +93,7 @@ var tmpEle = null;
             },
 
             templates:          {
-                container:        '<div id="mentiony-container-[ID]" class="mentiony-container"></div>',
+                // container:        '<div id="mentiony-container-[ID]" class="mentiony-container"></div>',
                 content:          '<div id="mentiony-content-[ID]" class="mentiony-content" contenteditable="true"></div>',
                 popover:          '<div id="mentiony-popover-[ID]" class="mentiony-popover"></div>',
                 list:             '<ul id="mentiony-popover-[ID]" class="mentiony-list"></ul>',
