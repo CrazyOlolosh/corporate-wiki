@@ -45,8 +45,10 @@ from models import Spaces, User, Page, Versions, Comments
 from forms import comment_form, login_form, register_form, post_form, permission_form, space_form
 
 
+import random
+import string
 import threading
-from json import dumps
+from json import dumps, loads
 import re
 import requests
 from httplib2 import Http
@@ -74,17 +76,29 @@ def session_handler():
 @app.route("/", methods=("GET", "POST"), strict_slashes=False)
 def index():
     if current_user.is_authenticated:
-        db.session.begin()
+        try:
+            request.args['space']
+        except KeyError:
+            parent = None
+        else:
+            parent = request.args['space']
+
         if current_user.fav_spaces:
             fav_list = current_user.fav_spaces[1:-1].split(",")
         else:
             fav_list = []
         if current_user.allowed_spaces:
             s_list = current_user.allowed_spaces[1:-1].split(",")
-            spaces_raw = Spaces.query.filter(Spaces.id.in_(s_list)).order_by(desc(Spaces.id.in_(fav_list))).all()
+            spaces_raw = Spaces.query.filter(and_(Spaces.parent == parent, Spaces.id.in_(s_list))).order_by(desc(Spaces.id.in_(fav_list))).all()
         else:
-            spaces_raw = Spaces.query.order_by(desc(Spaces.id.in_(fav_list))).all()
-        db.session.close()
+            if current_user.role == "Admin":
+                spaces_raw = Spaces.query.filter(Spaces.parent == parent).order_by(desc(Spaces.id.in_(fav_list))).all()
+            else:
+                spaces_raw = []
+
+        if len(spaces_raw) < 1:
+            p = Spaces.query.get(parent)
+            return redirect(url_for('page', id=p.homepage))
 
         spaces = [
             {
@@ -98,12 +112,28 @@ def index():
             }
             for space in spaces_raw
         ]
+        
+        fav_list = dumps(fav_list)
     else:
         spaces = []
+        fav_list = []
 
-    fav_list = dumps(fav_list)
+    return render_template("index.html", title="Главная", spaces=spaces, action="main", fav=fav_list)
 
-    return render_template("index.html", title="Home", spaces=spaces, action="main", fav=fav_list)
+
+# @app.route("/fetch/<space>", methods=("GET", "POST"))
+# @login_required
+# def space_fetch(p_space):
+#     s_list = [
+#         {
+#             'id': space.id,
+#             'homepage': space.homepage,
+#             'image': space.logo,
+#             'members': space.members,
+#             'name': space.name
+#         } for space in Spaces.query.filter(Spaces.parent == p_space.id)
+#     ]
+#     return
 
 
 @app.route("/login", methods=("GET", "POST"), strict_slashes=False)
@@ -245,7 +275,7 @@ def secure_filename(filename: str) -> str:
 
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {"txt", "pdf", "docx", "xlsx", "jpg", "png"}
+    ALLOWED_EXTENSIONS = {"txt", "pdf", "docx", "xlsx", "jpg", "png", 'gif'}
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
@@ -389,6 +419,20 @@ def post():
     )
 
 
+def page_fetch_child(child_id):
+    c_list = []
+
+    def recursion(id):
+        if Page.query.filter(Page.parent == id).all():
+            for child in Page.query.filter(Page.parent == id).all():
+                c_list.append(child)
+                recursion(child.id)
+        return c_list
+    recursion(child_id)
+    
+    return c_list
+
+
 @app.route("/edit", methods=("GET", "POST"), strict_slashes=False)
 @login_required
 def edit():
@@ -430,6 +474,7 @@ def edit():
         ]
 
     page_text = page.text
+    page_text = page_text.replace('\\', '\\\\')
     page_text = page_text.replace('"', '\\"')
     page_text = page_text.replace("\n", "")
     if "\n" in page_text:
@@ -458,7 +503,7 @@ def edit():
             print("!Catch!")
         title = form.heading.data
         parent = form.parent.data
-        if parent == "None":
+        if parent == "None" or parent == "":
             parent = None
         space = form.space.data
         limitations = ""
@@ -483,9 +528,18 @@ def edit():
             sender="notify@kindofconfluence.com",
         )
 
+
+
         page.title = title
         page.text = text
-        page.space = space
+        if page.space == space:
+            page.space = space
+        else:
+            child_list = page_fetch_child(page.id)
+            print(child_list)
+            for child in child_list:
+                child.space = space
+            page.space = space
         page.parent = parent
 
         db.session.add(new_backup)
@@ -535,24 +589,27 @@ def restore():
     if "edit?id=" in request.referrer:
         pre_id = request.args["id"]
         db.session.begin()
+        
         # Update current page from version and remove newer
         version = Versions.query.get(pre_id)
-        page = Page.query.get(version.page_id)
-
+        id = version.page_id
+        page = Page.query.get(id)
+        
         page.text = version.text
         page.title = version.title
 
         remove_versions = Versions.query.filter(
             and_(
-                Versions.version > version.version, Versions.page_id == version.page_id
+                Versions.version > version.version, Versions.page_id == id
             )
         )
-        db.session.delete(remove_versions)
+        for version in remove_versions:
+            db.session.delete(version)
 
         db.session.commit()
         db.session.close()
 
-        return render_template(url_for("page", id=version.page_id))
+        return redirect(url_for("page", id=id))
     else:
         return render_template(url_for("index"))
 
@@ -728,9 +785,8 @@ def profile():
     list = []
 
     for page in Page.query.filter(Page.author == current_user.username).all():
-        id = page.id,
         creation_date = datetime.fromtimestamp(int(page.date)).strftime("%Y-%m-%d %H:%M")
-        last_ver = Versions.query.filter(Versions.page_id == id).order_by(desc(Versions.version)).first()
+        last_ver = Versions.query.filter(Versions.page_id == page.id).order_by(desc(Versions.version)).first()
         if last_ver is None:
             last_edit = '-'
             edit_author = '-'
@@ -739,7 +795,7 @@ def profile():
             edit_author = last_ver.author
 
         item = {
-            'id': id,
+            'id': page.id,
             'title': page.title,
             'creation_date': creation_date,
             'last_edit': last_edit,
@@ -803,7 +859,7 @@ def page_tree_gen(space):
         print(p_list)
         pages = (
             Page.query.filter(and_(Page.space == space, not_(Page.id.in_(p_list))))
-            .order_by(Page.date)
+            .order_by(or_(desc(Page.parent), Page.date))
             .all()
         )
     else:
@@ -958,6 +1014,27 @@ def perm_edit():
 
     else:
         return url_for("index")
+
+
+@app.route("/gallery", methods=("GET", "POST"))
+def gallery_fix():
+    img_list_raw = request.data
+    print(img_list_raw)
+    img_list = loads(img_list_raw)
+    print(img_list)
+
+    gid = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+
+    img = [
+        {
+            'num': int(img),
+            'link': img_list[img]
+
+        } for img in img_list.keys()]
+    print(img)
+    num = len(img)
+
+    return str(render_template('gallery_template.html', id=gid, gallery=img, num=num))
 
 
 @app.route("/page_upload", methods=("GET", "POST"))

@@ -73,6 +73,11 @@ class User(UserMixin, db.Model):
         return '<User %r>' % self.username
 
 
+# def space_update(context):
+#     sp = context.get_current_parameters()['space']
+#     print(sp)
+
+
 class Page(db.Model):
     __tablename__ = "Pages"
 
@@ -84,8 +89,8 @@ class Page(db.Model):
     space = db.Column(db.Integer, ForeignKey('Spaces.id'))
     limitations = db.Column(db.String(50))
     date = db.Column(db.Integer)
-    children = db.relationship("Page")
-    # space_rel = db.relationship("Spaces", backref='space')
+    p_parent = db.relationship("Page")
+    # p_space_rel = db.relationship("Spaces", backref='p_space')
     # user_rel = db.relationship("User", backref='user')
     # version_rel = db.relationship("Versions", backref='origin_page')
 
@@ -108,11 +113,12 @@ class Spaces(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     description = db.Column(db.String())
-    homepage = db.Column(db.Integer)
+    homepage = db.Column(db.Integer, ForeignKey('Pages.space'))
     members = db.Column(db.Integer)
-    parent = db.Column(db.Integer)
+    parent = db.Column(db.Integer, ForeignKey('Spaces.id'))
     limitations = db.Column(db.String(50))
     logo = db.Column(db.String())
+    s_children = db.relationship("Spaces")
 
     def __init__(self, name, description, homepage, members, parent, limitations, logo):
         self.name = name

@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title%} {{ title }} {% endblock %}
+{% block title%} Fill.in - Профиль {{ current_user.name }} {% endblock %}
 {% block content%}
 <meta data-user="{{current_user.username}}">
 
-<div class="min-h-full pb-44">
+<div class="min-h-full pb-40">
     {% include "navbar.html" %}
     <header class="bg-white dark:bg-slate-700 shadow">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -13,23 +13,23 @@
     <main class="mx-10 ">
         <div class="flex justify-between my-10">
             <div class="w-8/12">
-                <div class="font-medium">
-                    Список страниц
+                <div class="font-medium max-w-[720px] px-4 mx-auto">
+                    <label class="w-full">Список страниц</label>
                 </div>
-                <div class="overflow-hidden overflow-x-none border border-gray-100 rounded mt-2">
-                   <table class="min-w-full text-sm divide-y divide-gray-200">
+                <div class="overflow-hidden overflow-x-none mx-auto  rounded mt-2">
+                   <table class=" text-sm divide-y divide-gray-200 mx-auto">
                     <thead>
                       <tr class="bg-gray-50">
-                        <th class="px-4 py-2 max-w-[300px] overflow-hidden font-medium text-left text-gray-900 whitespace-nowrap">Название</th>
+                        <th class="px-4 py-2 max-w-[300px] font-medium text-left text-gray-900 whitespace-nowrap">Название</th>
                         <th class="px-4 py-2 font-medium text-left text-gray-900 whitespace-nowrap">Дата создания</th>
                         <th class="px-4 py-2 font-medium text-left text-gray-900 whitespace-nowrap">Последние правки</th>
                         <th class="px-4 py-2 font-medium text-left text-gray-900 whitespace-nowrap">Автор правок</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 block">
+                    <tbody class="divide-y divide-gray-100 ">
                         {% for article in list %} 
-                      <tr data-page="{{ article.id }}">
-                        <td class="px-4 py-2 max-w-[300px] overflow-hidden font-medium text-gray-900 whitespace-nowrap">{{article.title}}</td>
+                      <tr data-page="{{ article.id }}" class="hover:bg-slate-700">
+                        <td class="px-4 py-2 max-w-[300px] overflow-hidden font-medium text-gray-900 whitespace-nowrap ">{{article.title}}</td>
                         <td class="px-4 py-2 text-gray-200 whitespace-nowrap">{{article.creation_date}}</td>
                         <td class="px-4 py-2 text-gray-200 whitespace-nowrap">{{article.last_edit}}</td>
                         <td class="px-4 py-2 text-gray-200 whitespace-nowrap">{{article.edit_author}}</td>
@@ -54,6 +54,13 @@
                 </div>
             </div>
         </div>
+        <script>
+            $('tr').click(function() {
+                let pid = $(this).data('page');
+                url = '/page?id='+ pid;
+                window.open(url, target="_self");
+            })
+        </script>
     </main>
 </div>
 

@@ -157,9 +157,13 @@ RTE_DefaultConfig.linkStyles = [["Margin10", "margin:10px"], ["Padding:10", "pad
 
 RTE_DefaultConfig.svgCode_anchor = '<svg viewBox="-2 -2 20 20" fill="#5F6368" style="width: 100%; height: 100%;"><path fill-rule="evenodd" d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1z" clip-rule="evenodd"></path></svg>';
 
+RTE_DefaultConfig.svgCode_insertxgallery = '<svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24" width="512" height="512"><path d="M7,0H4A4,4,0,0,0,0,4V7a4,4,0,0,0,4,4H7a4,4,0,0,0,4-4V4A4,4,0,0,0,7,0ZM9,7A2,2,0,0,1,7,9H4A2,2,0,0,1,2,7V4A2,2,0,0,1,4,2H7A2,2,0,0,1,9,4Z"/><path d="M20,0H17a4,4,0,0,0-4,4V7a4,4,0,0,0,4,4h3a4,4,0,0,0,4-4V4A4,4,0,0,0,20,0Zm2,7a2,2,0,0,1-2,2H17a2,2,0,0,1-2-2V4a2,2,0,0,1,2-2h3a2,2,0,0,1,2,2Z"/><path d="M7,13H4a4,4,0,0,0-4,4v3a4,4,0,0,0,4,4H7a4,4,0,0,0,4-4V17A4,4,0,0,0,7,13Zm2,7a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V17a2,2,0,0,1,2-2H7a2,2,0,0,1,2,2Z"/><path d="M20,13H17a4,4,0,0,0-4,4v3a4,4,0,0,0,4,4h3a4,4,0,0,0,4-4V17A4,4,0,0,0,20,13Zm2,7a2,2,0,0,1-2,2H17a2,2,0,0,1-2-2V17a2,2,0,0,1,2-2h3a2,2,0,0,1,2,2Z"/></svg>'
+
+RTE_DefaultConfig.svgCode_createtoc = '<svg id="Layer_1" height="512" viewBox="0 0 24 24" width="512" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1"><path d="m4 6a2.982 2.982 0 0 1 -2.122-.879l-1.585-1.585 1.414-1.414 1.586 1.585a1.023 1.023 0 0 0 1.414 0l3.586-3.585 1.414 1.414-3.586 3.585a2.978 2.978 0 0 1 -2.121.879zm20-3h-12v2h12zm-17.879 10.121 3.586-3.585-1.414-1.414-3.586 3.585a1.023 1.023 0 0 1 -1.414 0l-1.586-1.585-1.414 1.414 1.585 1.585a3 3 0 0 0 4.243 0zm17.879-2.121h-12v2h12zm-17.879 10.121 3.586-3.585-1.414-1.414-3.586 3.585a1.023 1.023 0 0 1 -1.414 0l-1.586-1.585-1.414 1.414 1.585 1.585a3 3 0 0 0 4.243 0zm17.879-2.121h-12v2h12z"/></svg>'
+
 RTE_DefaultConfig.toolbar_default = "{bold,italic,underline,forecolor,backcolor}|{justifyleft,justifycenter,justifyright,justifyfull}|{insertorderedlist,insertunorderedlist,indent,outdent,insertblockquote,insertemoji}"
 	+ " #{paragraphs:toggle,fontname:toggle,fontsize:toggle,inlinestyle,lineheight}"
-	+ " / {removeformat,cut,copy,paste,delete,find}|{insertlink,unlink,anchor,insertchars,inserttable,insertimage,insertvideo,insertdocument,inserttemplate,insertcode}|{preview,code,selectall}"
+	+ " / {removeformat,cut,copy,paste,delete,find}|{insertlink,unlink,insertchars,inserttable,insertimage,insertxgallery,insertvideo,insertdocument,inserttemplate,insertcode}|{preview,code,selectall}|createtoc"
 	+ "#{toggleborder,fullscreenenter,fullscreenexit,undo,redo,togglemore}"; // Default set of buttons that appears in the rich text editor's toolbar on desktop.
 
 RTE_DefaultConfig.toolbar_mobile = "{bold,italic,underline|fontname:toggle,fontsize:toggle,menu_paragraphop|forecolor,backcolor}"
@@ -194,7 +198,7 @@ RTE_DefaultConfig.subtoolbar_justify = "justifyleft,justifycenter,justifyright";
 RTE_DefaultConfig.subtoolbar_controljustify = "justifyleft,justifycenter,justifyright,floatleft,floatright";  // A set of buttons that appears in the controljustify subtoolbar.
 RTE_DefaultConfig.subtoolbar_floatparagraph = "pmoveup,pmovedown,pduplicate,pdelete,pmore"; // The default tool buttons of floatparagraph.
 
-RTE_DefaultConfig.controltoolbar_TEXT = "removeformat | {bold,italic,underline,forecolor,backcolor}|{fontname:toggle,fontsize:toggle}|{insertlink,insertanchor}"  // A set of buttons that appears in the text selection float toolbar.
+RTE_DefaultConfig.controltoolbar_TEXT = "removeformat | {bold,italic,underline,forecolor,backcolor}|{fontname:toggle,fontsize:toggle}|{insertlink,anchor,insertxgallery}"  // A set of buttons that appears in the text selection float toolbar.
 RTE_DefaultConfig.controltoolbar_A = "{linkstyle,insertlink,unlink}"; // A set of buttons that appears in the link selection float toolbar.
 RTE_DefaultConfig.controltoolbar_TD = "{tableheader,menu_tablecell,menu_tablerow,menu_tablecolumn,menu_table}";//"{menu_tablecell,menu_tableinsert,menu_tabledelete,menu_table}",
 RTE_DefaultConfig.controltoolbar_IMG = "{menu_controlsize,imagecaption,controlalt,controlinsertlink,controleditlink,controlopenlink,controlunlink}/{menu_controljustify,imagestyle,imageeditor,delete}";//justifyleft,justifycenter,justifyright
@@ -519,6 +523,9 @@ RTE_DefaultConfig.text_cut = "Cut";
 RTE_DefaultConfig.text_copy = "Copy";
 RTE_DefaultConfig.text_copied = "copied";
 
+RTE_DefaultConfig.text_createtoc = "Table of Content";
+
+RTE_DefaultConfig.text_insertxgallery = "Insert Gallery";
 RTE_DefaultConfig.text_insertgallery = "Insert Gallery";
 RTE_DefaultConfig.text_insertdocument = "Insert Document";
 RTE_DefaultConfig.text_inserttemplate = "Insert Template";

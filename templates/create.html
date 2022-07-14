@@ -6,7 +6,7 @@
 <script type="text/javascript" src='static/richtexteditor/plugins/all_plugins.js'></script>
 <meta data-action="{{action}}">
 
-<div class="min-h-full pb-44">
+<div class="min-h-full pb-40">
     {% include "navbar.html" %}
 
     <header class="bg-white dark:bg-slate-700 shadow">
@@ -22,7 +22,7 @@
     <main>
         <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             <form action="{{ request.path }}" method="POST" class="flex">
-                <div class="mb-10">
+                <div class="mb-5">
                     <div class="form-group">
                         {{ form.heading.label(class_='label mx-3 text-lg') }}
                         <p class="control mx-3">
@@ -44,22 +44,22 @@
                         </p>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group ">
                         {{ form.post.label(class_='label mx-3 text-lg') }}
                         <p class="control mx-3">
-                            {{ form.post(rows=26) }}
+                            {{ form.post(rows=6) }}
                         </p>
                     </div>
                 </div>
                 <div class="form-group sticky top-20 self-start">
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn mx-3 mt-5"> Опубликовать </button>
+                        <button type="submit" class="btn mx-3 mt-5 bg-slate-400 text-gray-900 hover:text-gray-200 dark:bg-slate-600 dark:text-gray-200"> Опубликовать </button>
                     </div>
                 </div>
             </form>
         </div>
         <script>
-            var config = {};
+            var config = {editorResizeMode: "none"};
 
             config.file_upload_handler = function (file, callback, optionalIndex, optionalFiles) {
                 var uploadhandlerpath = "/upload";
@@ -156,6 +156,7 @@
                 xh.send(formData);
             }
             var editor1 = new RichTextEditor("#post", config);
+            $('.richtexteditor').addClass('max-h-[800px]');
 
             let action = $('meta[data-action]').attr('data-action');
             if (action == 'edit') {
@@ -190,19 +191,112 @@
 
                     dialoginner.close();
 
-                    editor.selectDoc(sel);
+                    editor.selectControl(sel);
                     
                     sel.setAttribute('id', textarea.value.trim());
                     editor.focus();
                 }
+            });
 
-                function __Append(parent, tagname, csstext, cssclass) {
-                    var tag = parent.ownerDocument.createElement(tagname);
-                    if (csstext) tag.style.cssText = csstext;
-                    if (cssclass) tag.className = cssclass;
-                    parent.appendChild(tag);
-                    return tag;
+            function __Append(parent, tagname, csstext, cssclass) {
+                var tag = parent.ownerDocument.createElement(tagname);
+                if (csstext) tag.style.cssText = csstext;
+                if (cssclass) tag.className = cssclass;
+                parent.appendChild(tag);
+                return tag;
+            }
+              
+            editor1.attachEvent("exec_command_insertxgallery", function (state, cmd, value) {
+                state.returnValue = true;//set it has been handled
+                console.log("gallery clicked");
+
+                var sel = editor1.getSelection();
+                console.log(sel);
+                var editor = this;
+
+                var dialoginner = editor.createDialog("Добавить галлерею", "width:170px;height:70px");
+
+                var div1 = __Append(dialoginner, "div", "position:relative;text-align:center;");
+
+                var divfooter = __Append(dialoginner, "rte-dialog-footer", null, "rte-dialog-footer-center");
+
+                var btn_add = __Append(divfooter, "rte-dialog-button")
+                btn_add.innerText = "Добавить";
+
+                var btn_done = __Append(divfooter, "rte-dialog-button")
+                btn_done.innerText = "Создать";
+
+                btn_add.onclick = function () {
+                    dialoginner.close();
+                    
+                    editor.insertHTML("<div class=\"xgallery\"><p>*** Добавьте изображения ниже ***</p></br></br></br><p>*** Добавьте изображения выше ***</p></div>");
+                    //Wrap around for ability to preselect images
                 }
+
+                btn_done.onclick = function () {
+                    dialoginner.close();
+
+                    let doc = editor.getDocument();
+                    
+                    console.log(doc.getElementsByClassName('xgallery'));
+                    $(doc).find('.xgallery').each(function() {
+                        console.log(this);
+                        console.log(doc);
+                        var img_list = {};
+                        counter = 0;
+                        $(this).children("img").each(function() {
+                            console.log(this);
+                            img_list[counter] = $(this).attr("src");
+                            counter = counter + 1;
+                        })
+
+                        var img_data = JSON.stringify(img_list);
+                        console.log(img_data);
+
+                        $.ajax({
+                            type: "POST",
+                            url: "/gallery",
+                            data: img_data,
+                            dataType: 'html',
+                            contentType: 'application/json',
+                            success: function (response) {
+                                prev_doc = editor.getDocument()
+                                var new_doc = $(prev_doc).find('.xgallery').first().attr('class','').replaceWith(response);
+                                console.log(new_doc);
+                                editor.insertHTML(new_doc);
+                            }
+                        });
+                    });
+                }
+            });
+
+            editor1.attachEvent("exec_command_createtoc", function (state, cmd, value) {
+                state.returnValue = true;//set it has been handled
+
+                var editor = this;
+                let doc = editor.getDocument();
+
+                $(doc).find('h1').each(function() {
+                    var h1_text = $(this).text();
+                    h1_text = h1_text.replace(' ', '_');
+                    $(this).attr('id', h1_text);
+                })
+                $(doc).find('h2').each(function() {
+                    var h2_text = $(this).text();
+                    h2_text = h2_text.replace(' ', '_');
+                    $(this).attr('id', h2_text);
+                })
+                $(doc).find('h3').each(function() {
+                    var h3_text = $(this).text();
+                    h3_text = h3_text.replace(' ', '_');
+                    $(this).attr('id', h3_text);
+                })
+
+                editor.selectDoc(true);
+                let toc = editor.insertHTML('<ul data-toc></ul>');
+
+                alert("Оглавление добавлено, опубликуйте страницу");
+
             });
 
         </script>
@@ -238,21 +332,21 @@
             });
         </script>
         <script>
-            $('textarea, input').mentiony({
-                onDataRequest: function (mode, keyword, onDataRequestCompleteCallback) {
-                    $.ajax({
-                    method: "GET",
-                    url: "/fetch_user?q="+ keyword,
-                    dataType: "json",
-                    success: function (response) {
-                        var data = response;
+            //$('textarea, input').mentiony({
+            //    onDataRequest: function (mode, keyword, onDataRequestCompleteCallback) {
+            //        $.ajax({
+            //        method: "GET",
+            //        url: "/fetch_user?q="+ keyword,
+            //        dataType: "json",
+            //        success: function (response) {
+            //            var data = response;
 
                         // Call this to populate mention.
-                        onDataRequestCompleteCallback.call(this, data);
-                    }
-                    });
-                }
-                });
+            //            onDataRequestCompleteCallback.call(this, data);
+            //        }
+            //        });
+            //    }
+            //    });
         </script>
     </main>
 </div>
@@ -394,7 +488,8 @@
 
     $('#restore-btn').click(function () {
         let version = $(this).data('version');
-        window.open('/restore?id=' + version);
+        window.open('/restore?id=' + version, target="_self");
     });
 </script>
+
 {% endblock %}

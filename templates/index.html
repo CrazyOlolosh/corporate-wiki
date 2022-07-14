@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title%} {{ title }} {% endblock %}
+{% block title%} Fill.in - {{ title }} {% endblock %}
 {% block content%}
 <meta data-user="{{current_user.username}}">
 <div id="content" class="h-full">
@@ -7,7 +7,7 @@
 
     {% if current_user.is_authenticated %}
 
-    <div class="min-h-full pb-44">
+    <div class="min-h-full pb-40">
         {% include "navbar.html" %}
 
         <header class="bg-white dark:bg-slate-700 shadow">
@@ -15,19 +15,19 @@
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-200">Главная</h1>
             </div>
         </header>
-        <main>
+        <main class="mt-10">
             <div class="max-w-7xl mx-auto pt-6 pb-10 sm:px-6 lg:px-8 flex justify-between">
-                <div class="w-full lg:w-6/12 mr-10">
-                    <label class="text-xl font-bold dark:text-gray-200 ml-4 lg:ml-auto my-2">Пространства</label>
+                <div class="w-full mr-10">
+                    <!-- <label class="text-xl font-bold dark:text-gray-200 ml-4 lg:ml-auto my-2">Пространства</label> -->
                     <div class="container grid max-w-screen-xl gap-3 lg:gap-8 lg:grid-cols-2 lg:grid-rows-2 lg:mt-5">
                         {% for space in spaces %}
-                        <div tabindex="0" aria-label="card {{space.id}}" data-obj="space-block" data-id="{{space.id}}" data-homepage="{{space.homepage}}" class="focus:outline-none w-full lg:mx-3 bg-white dark:bg-gray-800 p-6 shadow rounded flex-1">
-                            <div class="flex items-center">
+                        <div tabindex="0" aria-label="card {{space.id}}" data-obj="space-block" data-id="{{space.id}}" data-homepage="{{space.homepage}}" class="focus:outline-none w-full h-60 lg:mx-3 bg-white dark:bg-gray-800 p-6 shadow rounded flex-1">
+                            <div class="w-full h-full flex justify-end items-center">
                                 <img src="{{space.image}}" class="w-12 h-12 rounded" />
-                                <div class="flex items-start justify-between w-full">
-                                    <div class="pl-3 w-full">
-                                        <p tabindex="0" class="focus:outline-none text-xl font-medium leading-5 text-gray-800 dark:text-white ">{{space.name}}</p>
-                                        <p tabindex="0" class="focus:outline-none text-sm leading-normal pt-2 text-gray-500 dark:text-gray-200 ">{{space.members}} участников</p>
+                                <div class="flex h-full items-start justify-between w-full">
+                                    <div class="pl-3 w-full my-auto ">
+                                        <p tabindex="0" class="focus:outline-none text-2xl font-medium leading-5 text-gray-800 dark:text-white ">{{space.name}}</p>
+                                        <p tabindex="0" class="focus:outline-none text-lg leading-normal pt-2 text-gray-500 dark:text-gray-200 ">{{space.members}} участников</p>
                                     </div>
                                     <div data-fav-id="{{space.id}}" role="img" aria-label="bookmark" class="hover:animate-pulse space-fav-btn">
                                        <svg  class="focus:outline-none dark:text-white text-gray-800" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -40,11 +40,6 @@
                         {% endfor %}
                     </div>
                 </div>  
-                <div class="w-full lg:w-5/12">
-                    <label class="text-xl font-bold dark:text-gray-200 ml-4 lg:ml-auto my-2">Активность</label>
-                    <div>In development</div>
-                </div>
-
             </div>
         </main>
         
@@ -93,8 +88,8 @@
                 $(this).find('svg').attr('fill', '#45818e')
             }
             $(this).click(function() {
-                url = './page?id='+home;
-                window.open(url, '_self');
+                url = '/?space='+id;
+                window.open(url, target="_self");
             }).find('.space-fav-btn').click(function(e) {
                 return false;
             });
@@ -103,11 +98,11 @@
 
     {% else %}
 
-    <div class="hero min-h-screen" style="background-image: url(https://api.lorem.space/image/house?w=1000&h=800);">
-        <div class="hero-overlay bg-opacity-60"></div>
+    <div class="hero min-h-screen" style="background-image: url(./static/bg.jpg)">
+        <div class="hero-overlay bg-opacity-50"></div>
         <div class="hero-content text-center text-neutral-content">
             <div class="max-w-md">
-                <h1 class="mb-5 text-5xl font-bold">Kind of Confluence</h1>
+                <h1 class="mb-5 text-5xl font-bold">Fill.in - Kind of Confluence</h1>
                 <p class="mb-5">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi
                     exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.</p>
                 <a class="btn btn-primary" href="{{url_for('login')}}">Sign in</a>
