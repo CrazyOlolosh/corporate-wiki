@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between h-16">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <img src="./static/logo2.png" class="h-12">
+                    <img src="./static/logo2.png" class="h-8 lg:h-12">
                     <!-- <svg width="50" height="50" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill-rule="evenodd"
                         clip-rule="evenodd" class="fill-current">
                         <path
@@ -94,7 +94,7 @@
             </div>
             <div class="-mr-2 flex md:hidden">
                 <!-- Mobile menu button -->
-                <button type="button"
+                <button id="mobile-menu-btn" type="button"
                     class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
                     aria-controls="mobile-menu" aria-expanded="false">
                     <span class="sr-only">Open main menu</span>
@@ -122,17 +122,17 @@
     </div>
 
     <!-- Mobile menu, show/hide based on menu state. -->
-    <div class="md:hidden" id="mobile-menu">
+    <div class="hidden" id="mobile-menu">
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-            <a href="#" class="bg-gray-900 text-white block px-3 py-2 rounded-md text-base font-medium"
+            <a href="./" class="{% if action == 'main' %}bg-gray-900 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %} block px-3 py-2 rounded-md text-base font-medium"
                 aria-current="page">Главная</a>
 
             <a href="./spaces"
-                class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Пространства</a>
+                class="{% if action == 'space' %}bg-gray-900 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %} block px-3 py-2 rounded-md text-base font-medium">Пространства</a>
 
             <a href="./create"
-                class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Создать
+                class="{% if action == 'create' %}bg-gray-900 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %} block px-3 py-2 rounded-md text-base font-medium">Создать
                 +</a>
         </div>
         <div class="pt-4 pb-3 border-t border-gray-700">
@@ -159,15 +159,13 @@
             </div>
             <div class="mt-3 px-2 space-y-1">
                 <a href="./profile"
-                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Your
-                    Profile</a>
+                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Профиль</a>
 
                 <a href="#"
-                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Settings</a>
+                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Настройки</a>
 
                 <a href="./logout"
-                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Sign
-                    out</a>
+                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Выйти</a>
             </div>
         </div>
     </div>
@@ -185,6 +183,14 @@
         if($trigger !== event.target && !$trigger.has(event.target).length){
             $(".dropdown-menu").addClass("hidden");
         }            
+    });
+</script>
+<script>
+    $(document).ready(function(){
+        // Show hide popover
+        $("#mobile-menu-btn").click(function(){
+            $("#mobile-menu").toggleClass("hidden");
+        });
     });
 </script>
 <script>
