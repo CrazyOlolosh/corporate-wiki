@@ -59,11 +59,12 @@ class User(UserMixin, db.Model):
     fav_pages = db.Column(db.String())
     forbidden_pages = db.Column(db.String())
     last_online = db.Column(db.Integer, default=0)
+    online = db.Column(db.Boolean)
     comm_rel = db.relationship("Comments", backref="c_author")
     ver_rel = db.relationship("Versions", backref="v_author")
     page_rel = db.relationship("Page", backref="p_author")
 
-    def __init__(self, username, name, email, pwd, role=None, user_pic=None, confirmed=False, fav_spaces=None, allowed_spaces=None, fav_pages=None, forbidden_pages=None, last_online=0):
+    def __init__(self, username, name, email, pwd, role=None, user_pic=None, confirmed=False, fav_spaces=None, allowed_spaces=None, fav_pages=None, forbidden_pages=None, last_online=0, online=True):
         self.username = username
         self.name = name
         self.pwd = pwd

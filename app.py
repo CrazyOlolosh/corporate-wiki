@@ -15,6 +15,7 @@ from flask_login import (
 )
 import os
 from dotenv import load_dotenv
+from flask_socketio import SocketIO
 
 
 login_manager = LoginManager()
@@ -26,6 +27,7 @@ db = SQLAlchemy(session_options={'autocommit': True})
 migrate = Migrate()
 bcrypt = Bcrypt()
 mail = Mail()
+socketio = SocketIO()
 
 
 load_dotenv()
@@ -50,6 +52,7 @@ def create_app():
     migrate.init_app(app, db)
     bcrypt.init_app(app)
     mail.init_app(app)
+    socketio.init_app(app)
 
     return app
 

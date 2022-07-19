@@ -12,6 +12,9 @@ from flask import (
     g,
 )
 
+import eventlet
+from eventlet import wsgi
+
 from datetime import datetime, timedelta
 import time
 from sqlalchemy import desc, and_, not_, null, or_
@@ -40,7 +43,7 @@ from flask_login import (
 
 from flask_mail import Message
 
-from app import UPLOAD_FOLDER, SPACE_IMG_FOLDER, create_app, db, login_manager, bcrypt, mail
+from app import UPLOAD_FOLDER, SPACE_IMG_FOLDER, create_app, db, login_manager, bcrypt, mail, socketio
 from models import Spaces, User, Page, Versions, Comments
 from forms import comment_form, login_form, register_form, post_form, permission_form, space_form
 
@@ -73,6 +76,29 @@ def session_handler():
     app.permanent_session_lifetime = timedelta(minutes=720)
 
 
+@socketio.on('connected')
+def custom_connect_event(json, methods=['GET', 'POST']):
+    db.session.begin()
+    current_user.online = True
+    print(f"{current_user.username} is online. {current_user.online}")
+    db.session.commit()
+    db.session.close()
+
+
+@socketio.on('disconnected')
+def custom_disconnect_event(json, methods=['GET', 'POST']):
+    date = int(time.time())
+    db.session.begin()
+    username = json['user']
+    print(username)
+    user = User.query.filter(User.username == username)
+    user.last_online = date
+    user.online = False
+    print(f"{user.username} is offline. {user.online}")
+    db.session.commit()
+    db.session.close()
+
+
 @app.route("/", methods=("GET", "POST"), strict_slashes=False)
 def index():
     if current_user.is_authenticated:
@@ -98,7 +124,12 @@ def index():
 
         if len(spaces_raw) < 1:
             p = Spaces.query.get(parent)
-            return redirect(url_for('page', id=p.homepage))
+            try:
+                homepage_id = p.homepage
+            except AttributeError:
+                return render_template('ftu.html')
+            else:    
+                return redirect(url_for('page', id=homepage_id))
 
         spaces = [
             {
@@ -641,7 +672,7 @@ def page():
                 "text": comment.text,
                 "author": comment.c_author.name,
                 "author_img": comment.c_author.user_pic,
-                "author_active": comment.c_author.is_active,
+                "author_active": comment.c_author.online,
                 "time": datetime.fromtimestamp(int(comment.time)).strftime(
                     "%Y-%m-%d %H:%M"
                 ),
@@ -1092,4 +1123,5 @@ def upload_pages():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5003, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5003)
+    # wsgi.server(eventlet.listen(("0.0.0.0", 8000), app))
