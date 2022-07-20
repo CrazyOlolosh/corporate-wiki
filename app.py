@@ -43,6 +43,8 @@ def create_app():
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
+    app.config['SQLALCHEMY_POOL_SIZE'] = 20
+    app.config['SQLALCHEMY_MAX_OVERFLOW'] = 40
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     app.elasticsearch = Elasticsearch(ELASTICSEARCH_URI)\
         if ELASTICSEARCH_URI else None

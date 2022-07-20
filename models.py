@@ -113,15 +113,16 @@ class Spaces(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
+    key = db.Column(db.String(5), unique=True)
     description = db.Column(db.String())
-    homepage = db.Column(db.Integer, ForeignKey('Pages.space'))
+    homepage = db.Column(db.Integer, unique=True)
     members = db.Column(db.Integer)
     parent = db.Column(db.Integer, ForeignKey('Spaces.id'))
     limitations = db.Column(db.String(50))
     logo = db.Column(db.String())
     s_children = db.relationship("Spaces")
 
-    def __init__(self, name, description, homepage, members, parent, limitations, logo):
+    def __init__(self, name, description, homepage, members, parent, limitations, logo, key=None):
         self.name = name
         self.description = description
         self.homepage = homepage
@@ -129,6 +130,7 @@ class Spaces(db.Model):
         self.parent = parent
         self.limitations = limitations
         self.logo = logo
+        self.key = key
 
     def __repr__(self):
         return f""
@@ -182,14 +184,14 @@ class Tasks(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
-    project = db.Column(db.String(), nullable=False)
+    project_key = db.Column(db.String(), ForeignKey("Spaces.key"), nullable=False)
     project_id = db.Column(db.Integer, nullable=False)
     type = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(), nullable=False)
     priority = db.Column(db.String(), nullable=False)
     tags = db.Column(db.String())
     attach = db.Column(db.String())
-    tied_tasks = db.Column(db.String(), ForeignKey("Tasks.id"))
+    tied_tasks = db.Column(db.String())
     assignee = db.Column(db.String(), ForeignKey("user.username"))
     epic = db.Column(db.String())
     status = db.Column(db.Integer, nullable=False)
@@ -199,9 +201,10 @@ class Tasks(db.Model):
     date_update = db.Column(db.Integer)
     date_estimate = db.Column(db.Integer)
 
-    def __init__(self, name, project, description, author, date_creation, type=1, priority=3, tags=None, attach=None, tied_tasks=None, assignee=None, epic=None, status=1, solution=None,  date_update=None, date_estimate=None):
+    def __init__(self, name, project_key, project_id, description, author, date_creation, type=1, priority=3, tags=None, attach=None, tied_tasks=None, assignee=None, epic=None, status=1, solution=None,  date_update=None, date_estimate=None):
         self.name = name
-        self.project = project
+        self.project_key = project_key
+        self.project_id = project_id
         self.type = type
         self.description = description
         self.priority = priority
@@ -216,3 +219,6 @@ class Tasks(db.Model):
         self.date_creation = date_creation
         self.date_update = date_update
         self.date_estimate = date_estimate
+
+    def __repr__(self):
+        return f""

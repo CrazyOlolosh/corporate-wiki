@@ -16,14 +16,14 @@
     </header>
     <main>
         <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <form id="task-create" class="flex justify-center">
+            <form id="task-create" enctype="multipart/form-data" class="flex justify-center">
                 <div class="mb-5 w-7/12 bg-emerald-100 p-4">
                     <div class="grid md:grid-cols-2 md:gap-6">
                         <div class="relative z-0 mb-5 w-full group">
-                            <input type="text" name="floating_project" id="floating_project" list="projects"
+                            <input type="text" name="project" id="project" list="projects"
                                 class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                 placeholder=" " required />
-                            <label for="floating_project"
+                            <label for="project"
                                 class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Проект</label>
                             <datalist id="projects">
                                 {% for project in project_list %}
@@ -32,72 +32,91 @@
                             </datalist>
                         </div>
                         <div class="relative z-0 mb-1 w-full group">
-                            <input type="text" name="floating_type" id="floating_type" list="type"
+                            <input type="text" name="type" id="type" list="types"
                                 class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                 placeholder=" " required />
-                            <label for="floating_type"
+                            <label for="type"
                                 class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Тип</label>
-                            <datalist id="type">
-                                <option data="task">Задача</option>
-                                <option data="error">Ошибка</option>
-                                <option data="epic">Эпик</option>
-                                <option data="story">История</option>
+                            <datalist id="types">
+                                <option>Задача</option>
+                                <option>Ошибка</option>
+                                <option>Эпик</option>
+                                <option>История</option>
                             </datalist>
                         </div>
                     </div>
                     <hr>
                     <div class="relative z-0 mt-2 mb-6 w-full group">
-                        <input type="text" name="repeat_title" id="floating_repeat_title"
+                        <input type="text" name="title" id="title"
                             class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                             placeholder=" " required />
-                        <label for="floating_repeat_title"
+                        <label for="title"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Тема</label>
                     </div>
                     <div class="relative z-0 mt-2 mb-6 w-full group">
                         <label for="description"
                             class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Описание</label>
                         <input type="text" id="description"
-                            class="max-h-96 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            required> </input>
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            required>
                     </div>
-                    <div class="grid md:grid-cols-2 md:gap-6">
-                        <div class="relative z-0 mb-6 w-full group">
-                            <input type="text" name="floating_first_name" id="floating_first_name"
-                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                placeholder=" " required />
-                            <label for="floating_first_name"
-                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                --- </label>
-                        </div>
-                        <div class="relative z-0 mb-6 w-full group">
-                            <input type="text" name="floating_last_name" id="floating_last_name"
-                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                placeholder=" " required />
-                            <label for="floating_last_name"
-                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                --- </label>
-                        </div>
+
+                    <div class="relative z-0 mb-6 w-full group">
+                        <input type="text" name="priority" id="priority" list="priorities"
+                            class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                            placeholder=" " required />
+                        <label for="priority"
+                            class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                            Приоритет </label>
+                        <datalist id="priorities">
+                            <option>Lowest</option>
+                            <option>Low</option>
+                            <option>Medium</option>
+                            <option>High</option>
+                            <option>Highest</option>
+                            <option>Blocker</option>
+                        </datalist>
                     </div>
-                    <div class="grid md:grid-cols-2 md:gap-6">
-                        <div class="relative z-0 mb-6 w-full group">
-                            <input type="text" name="floating_phone" id="floating_phone"
-                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                placeholder=" " required />
-                            <label for="floating_phone"
-                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                --- </label>
-                        </div>
-                        <div class="relative z-0 mb-6 w-full group">
-                            <input type="text" name="floating_company" id="floating_company"
-                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                placeholder=" " required />
-                            <label for="floating_company"
-                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">-
-                                - -</label>
-                        </div>
+                    <div class="relative z-0 mb-6 w-full group">
+                        <input type="text" name="tags" id="tags"
+                            class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                            placeholder=" " />
+                        <label for="tags"
+                            class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                            Метки </label>
+                        <!-- TO DO: Add dynamic tags upload and custom library -->
                     </div>
+
+
+                    Вложения <div class="flex justify-center items-center w-full mb-4">
+                        <label for="dropzone-file"
+                            class="flex flex-col justify-center items-center w-full h-32 bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                            <div class="flex flex-col justify-center items-center pt-5 pb-6">
+                                <svg aria-hidden="true" class="mb-3 w-10 h-10 text-gray-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                    </path>
+                                </svg>
+                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span
+                                        class="font-semibold">Click to upload</span> or drag and drop</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG, GIF, TXT, PDF, DOCX,
+                                    XLSX</p>
+                            </div>
+                            <input id="dropzone-file" type="file" class="hidden" />
+                        </label>
+                    </div>
+                    <div class="relative z-0 mb-6 w-full group">
+                        <input type="text" name="assignee" id="assignee"
+                            class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                            placeholder=" " required />
+                        <label for="assignee"
+                            class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                            Исполнитель</label>
+                    </div>
+
                     <button type="submit"
-                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-1.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-1.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Создать</button>
                 </div>
             </form>
         </div>
@@ -199,13 +218,38 @@
                 xh.send(formData);
             }
             var editor1 = new RichTextEditor("#description", config);
-            $('.richtexteditor').addClass('max-h-[800px]');
+            $('.richtexteditor').addClass('max-h-[500px]');
 
             let action = $('meta[data-action]').attr('data-action');
             if (action == 'edit') {
                 editor1.setHTMLCode(`{{- text|safe -}}`);
             }
 
+            $('#task-create').submit(function (e) {
+                e.preventDefault();
+
+                var form = $(this);
+                let data = {};
+                data['project'] = $('#project').val();
+                data['type'] = $('#type').val();
+                data['title'] = $('#title').val();
+                data['description'] = editor1.getHTMLCode();
+                data['priority'] = $('#priority').val();
+                data['tags'] = $('#tags').val();
+                data['attach'] = $('#dropzone-file').val();
+                data['assignee'] = $('#assignee').val();
+                console.log(data);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/api/task',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    success: function (data) {
+                        alert(data)
+                    }
+                });
+            });
         </script>
     </main>
 </div>

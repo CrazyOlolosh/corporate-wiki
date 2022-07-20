@@ -87,9 +87,7 @@ def custom_disconnect_event(json, methods=['GET', 'POST']):
     date = int(time.time())
     db.session.begin()
     username = json['user']
-    print(username)
-    user = User.query.filter(User.username == username)
-    print(user)
+    user = User.query.filter(User.username == username).first()
     user.last_online = date
     user.online = False
     print(f"{user.username} is offline. {user.online}")
@@ -304,7 +302,7 @@ def secure_filename(filename: str) -> str:
 
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {"txt", "pdf", "docx", "xlsx", "jpg", "png", 'gif'}
+    ALLOWED_EXTENSIONS = {"txt", "pdf", "docx", "xlsx", "jpg", "png", 'gif', 'svg'}
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
@@ -1134,16 +1132,15 @@ def eagle_user_tasks():
 @app.route("/eagle/create", methods=("GET", "POST"), strict_slashes=False)
 @login_required
 def eagle_create_tasks():
-    parents = [space.id for space in Spaces.query.filter(Spaces.parent != None).all()]
-    print(parents)
-    # projects = [
-    #     {
-    #         'key': project.name[:3],
-    #         'name': project.name
-    #     } for project in Spaces.query.filter(not_(Spaces.id.in_(parents)).all())
-    # ]
 
-    projects = [{'key':"SOM",'name':'Somnolent'},{'key':"ECO",'name':'Eco Tycoon'},{'key':"SM",'name':'Samedi Manor'},{'key':"JC",'name':'Jumpurr Cat'}]
+
+    projects = [
+        {
+            'key': project.key,
+            'name': project.name
+        } for project in Spaces.query.filter(Spaces.key != None).all()
+    ]
+
     return render_template('task_create.html', origin="eagle", title='Новая задача', project_list=projects)
 
 
@@ -1152,10 +1149,10 @@ def eagle_create_tasks():
 def task_api():
     q_param = request.args
 
-    id = q_param.get['id']
-    action = q_param.get['action']
-    assignee = q_param.get['assignee']
-    status = q_param.get['status']
+    id = q_param.get('id')
+    action = q_param.get('action')
+    assignee = q_param.get('assignee')
+    status = q_param.get('status')
     '''
     Status code:
     1: To do (Default)
@@ -1164,7 +1161,7 @@ def task_api():
     4: Test
     5: Done
     '''
-    priority = q_param['priority']
+    priority = q_param.get('priority')
     '''
     Priority code:
     1: Lowest
@@ -1174,20 +1171,50 @@ def task_api():
     5: Highest
     6: Blocker
     '''
-    data = q_param['data']
+    data = q_param.get('data')
 
-    limit = q_param['limit']
-    offset = q_param['offset']
+    limit = q_param.get('limit')
+    offset = q_param.get('offset')
 
+    types = {'Задача':'task', 'Ошибка':'error', 'Эпик':'epic', 'История':'story'}
+    priorities = {'Lowest':1, 'Low':2, 'Medium':3, 'High':4, 'Highest':5, 'Blocker':6}
 
     if request.method == "GET":
         if id:
             return dumps(Tasks.query.get(id))
             
     if request.method == "POST":
-        if id:
-            #create
-            return
+        if not id:
+            data = loads(request.data)
+            
+            
+            name = data['title']
+            project = data['project']
+            project_id_raw = Tasks.query.filter(Tasks.project_key == project).all()
+            project_id = len(project_id_raw) + 1
+            description = data['description']
+            date = int(time.time())
+            type_raw = data['type']
+            type = types[type_raw]
+            priority_raw = data['priority']
+            priority = priorities[priority_raw]
+            if data['tags']:
+                tags = data['tags']
+            else:
+                tags = None
+            if data['attach']:
+                attach = data['attach']
+            else:
+                attach = None
+
+            assignee = data['assignee']
+
+            db.session.begin()
+            task = Tasks(name, project, description, project_id=project_id, author=current_user, date_creation=date, type=type, priority=priority, tags=tags, attach=attach, assignee=assignee)
+            db.session.commit(task)
+            db.session.close()
+
+            return dumps({'result': 'Task created'})
 
     if request.method == "PATCH":
         if id:
