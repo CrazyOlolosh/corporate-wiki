@@ -175,3 +175,44 @@ class Comments(db.Model):
         self.author = author
         self.text = text
         self.time = time
+
+
+class Tasks(db.Model):
+    __tablename__ = 'Tasks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=False)
+    project = db.Column(db.String(), nullable=False)
+    project_id = db.Column(db.Integer, nullable=False)
+    type = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.String(), nullable=False)
+    priority = db.Column(db.String(), nullable=False)
+    tags = db.Column(db.String())
+    attach = db.Column(db.String())
+    tied_tasks = db.Column(db.String(), ForeignKey("Tasks.id"))
+    assignee = db.Column(db.String(), ForeignKey("user.username"))
+    epic = db.Column(db.String())
+    status = db.Column(db.Integer, nullable=False)
+    solution = db.Column(db.String())
+    author = db.Column(db.String(80), ForeignKey("user.username"), nullable=False)
+    date_creation = db.Column(db.Integer, nullable=False)
+    date_update = db.Column(db.Integer)
+    date_estimate = db.Column(db.Integer)
+
+    def __init__(self, name, project, description, author, date_creation, type=1, priority=3, tags=None, attach=None, tied_tasks=None, assignee=None, epic=None, status=1, solution=None,  date_update=None, date_estimate=None):
+        self.name = name
+        self.project = project
+        self.type = type
+        self.description = description
+        self.priority = priority
+        self.tags = tags
+        self.attach = attach
+        self.tied_tasks = tied_tasks
+        self.assignee = assignee
+        self.epic = epic
+        self.status = status
+        self.solution = solution
+        self.author = author
+        self.date_creation = date_creation
+        self.date_update = date_update
+        self.date_estimate = date_estimate

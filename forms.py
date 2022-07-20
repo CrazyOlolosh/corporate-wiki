@@ -82,3 +82,12 @@ class space_form(FlaskForm):
     parent = SelectField('Родитель', choices=[])
     description = TextAreaField("Описание", render_kw={'rows': 5}, validators=[InputRequired()])
     img = FileField('Логотип пространства')
+
+# class task_create(FlaskForm):
+#     name = StringField('Тема', validators=[InputRequired(), Length(max=200)])
+#     description = TextAreaField('Тема', render_kw={'rows': 5}, validators=[InputRequired()])
+#     priority = SelectField('Приоритет', choices=[{1:'Lowest', 2:'Low', 3:'Medium', 4:'High', 5:'Highest', 6:'Blocker'}])
+#     attach = FileField('Вложение')
+#     project = SelectField('Проект', choices=[])
+#     type = SelectField('Тип', choices=[])
+#     assignee = 

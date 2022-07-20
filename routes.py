@@ -12,12 +12,9 @@ from flask import (
     g,
 )
 
-import eventlet
-from eventlet import wsgi
-
 from datetime import datetime, timedelta
 import time
-from sqlalchemy import desc, and_, not_, null, or_
+from sqlalchemy import desc, and_, not_, or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import (
     IntegrityError,
@@ -44,7 +41,7 @@ from flask_login import (
 from flask_mail import Message
 
 from app import UPLOAD_FOLDER, SPACE_IMG_FOLDER, create_app, db, login_manager, bcrypt, mail, socketio
-from models import Spaces, User, Page, Versions, Comments
+from models import Spaces, Tasks, User, Page, Versions, Comments
 from forms import comment_form, login_form, register_form, post_form, permission_form, space_form
 
 
@@ -92,6 +89,7 @@ def custom_disconnect_event(json, methods=['GET', 'POST']):
     username = json['user']
     print(username)
     user = User.query.filter(User.username == username)
+    print(user)
     user.last_online = date
     user.online = False
     print(f"{user.username} is offline. {user.online}")
@@ -149,7 +147,7 @@ def index():
         spaces = []
         fav_list = []
 
-    return render_template("index.html", title="Главная", spaces=spaces, action="main", fav=fav_list)
+    return render_template("index.html", title="Главная", spaces=spaces, action="main", fav=fav_list, origin='fillin')
 
 
 # @app.route("/fetch/<space>", methods=("GET", "POST"))
@@ -1068,6 +1066,146 @@ def gallery_fix():
     return str(render_template('gallery_template.html', id=gid, gallery=img, num=num))
 
 
+@app.route("/eagle", methods=("GET", "POST"), strict_slashes=False)
+def eagle_index():
+    if current_user.is_authenticated:
+        try:
+            request.args['space']
+        except KeyError:
+            parent = None
+        else:
+            parent = request.args['space']
+
+        if current_user.fav_spaces:
+            fav_list = current_user.fav_spaces[1:-1].split(",")
+        else:
+            fav_list = []
+        if current_user.allowed_spaces:
+            s_list = current_user.allowed_spaces[1:-1].split(",")
+            spaces_raw = Spaces.query.filter(and_(Spaces.parent == parent, Spaces.id.in_(s_list))).order_by(desc(Spaces.id.in_(fav_list))).all()
+        else:
+            if current_user.role == "Admin":
+                spaces_raw = Spaces.query.filter(Spaces.parent == parent).order_by(desc(Spaces.id.in_(fav_list))).all()
+            else:
+                spaces_raw = []
+
+        if len(spaces_raw) < 1:
+            p = Spaces.query.get(parent)
+            try:
+                homepage_id = p.homepage
+            except AttributeError:
+                return render_template('ftu.html')
+            else:    
+                return redirect(url_for('page', id=homepage_id))
+
+        spaces = [
+            {
+                "id": space.id,
+                "parrent": space.parent,
+                "name": space.name,
+                "image": space.logo,
+                "members": space.members,
+                "description": space.description,
+                "homepage": space.homepage,
+            }
+            for space in spaces_raw
+        ]
+        
+        fav_list = dumps(fav_list)
+    else:
+        spaces = []
+        fav_list = []
+
+    return render_template("eagle.html", title="Главная", spaces=spaces, action="main", fav=fav_list, origin='eagle')
+
+
+@app.route("/eagle/task", methods=("GET", "POST"), strict_slashes=False)
+@login_required
+def eagle_task():
+    return render_template('task.html')
+
+
+@app.route("/eagle/tasks", methods=("GET", "POST"), strict_slashes=False)
+@login_required
+def eagle_user_tasks():
+    return
+
+
+@app.route("/eagle/create", methods=("GET", "POST"), strict_slashes=False)
+@login_required
+def eagle_create_tasks():
+    parents = [space.id for space in Spaces.query.filter(Spaces.parent != None).all()]
+    print(parents)
+    # projects = [
+    #     {
+    #         'key': project.name[:3],
+    #         'name': project.name
+    #     } for project in Spaces.query.filter(not_(Spaces.id.in_(parents)).all())
+    # ]
+
+    projects = [{'key':"SOM",'name':'Somnolent'},{'key':"ECO",'name':'Eco Tycoon'},{'key':"SM",'name':'Samedi Manor'},{'key':"JC",'name':'Jumpurr Cat'}]
+    return render_template('task_create.html', origin="eagle", title='Новая задача', project_list=projects)
+
+
+@app.route("/api/task", methods=("GET", "POST", "PATCH", "DELETE"))
+@login_required
+def task_api():
+    q_param = request.args
+
+    id = q_param.get['id']
+    action = q_param.get['action']
+    assignee = q_param.get['assignee']
+    status = q_param.get['status']
+    '''
+    Status code:
+    1: To do (Default)
+    2: In progress
+    3: Review
+    4: Test
+    5: Done
+    '''
+    priority = q_param['priority']
+    '''
+    Priority code:
+    1: Lowest
+    2: Low
+    3: Medium (Default)
+    4: High
+    5: Highest
+    6: Blocker
+    '''
+    data = q_param['data']
+
+    limit = q_param['limit']
+    offset = q_param['offset']
+
+
+    if request.method == "GET":
+        if id:
+            return dumps(Tasks.query.get(id))
+            
+    if request.method == "POST":
+        if id:
+            #create
+            return
+
+    if request.method == "PATCH":
+        if id:
+            task = Tasks.query.get(id)
+            #update
+            return
+
+    if request.method == "DELETE":
+        if id:
+            db.session.begin()
+            task = Tasks.query.get(id)
+            db.session.delete(task)
+            db.session.close()
+            return dumps({ 'result': 'Task deleted'})
+
+    return
+
+
 @app.route("/page_upload", methods=("GET", "POST"))
 @login_required
 def upload_pages():
@@ -1123,5 +1261,4 @@ def upload_pages():
 
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5003)
-    # wsgi.server(eventlet.listen(("0.0.0.0", 8000), app))
+    socketio.run(app, host="0.0.0.0", port=5004, debug=True)

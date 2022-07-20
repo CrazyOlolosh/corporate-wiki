@@ -1,7 +1,7 @@
-<footer class=" clear-both relative h-40 -mt-40 p-4 lg:p-10 bg-neutral text-neutral-content">
+<footer class="{% if origin == 'fillin' %}bg-gray-800 {% elif origin == 'eagle' %} bg-emerald-800 {% endif %} clear-both relative h-40 -mt-40 p-4 lg:p-10 bg-neutral text-neutral-content">
     <div class="max-w-7xl w-full mx-auto flex flex-row justify-between items-center">
         <div>
-            <img src="./static/logo2.png" class="h-12 mb-4">
+            <img src="/static/logo2.png" class="h-12 mb-4">
             <!-- <svg width="50" height="50" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill-rule="evenodd"
                 clip-rule="evenodd" class="fill-current">
                 <path

@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title%} {{ title }} {% endblock %}
+{% block content%}
+<link rel="stylesheet" href="/static/richtexteditor/rte_theme_default.css" />
+<script type="text/javascript" src="/static/richtexteditor/rte.js"></script>
+<script type="text/javascript" src='/static/richtexteditor/plugins/all_plugins.js'></script>
+<meta data-action="{{action}}">
+
+<div class="min-h-full pb-40">
+    {% include "navbar.html" %}
+
+    <header class="bg-white dark:bg-emerald-800 shadow">
+        <div class="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex justify-between">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-200">{{title}}</h1>
+        </div>
+    </header>
+    <main>
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <form id="task-create" class="flex justify-center">
+                <div class="mb-5 w-7/12 bg-emerald-100 p-4">
+                    <div class="grid md:grid-cols-2 md:gap-6">
+                        <div class="relative z-0 mb-5 w-full group">
+                            <input type="text" name="floating_project" id="floating_project" list="projects"
+                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" " required />
+                            <label for="floating_project"
+                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Проект</label>
+                            <datalist id="projects">
+                                {% for project in project_list %}
+                                <option value="{{project.key}}">{{project.name}}</option>
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        <div class="relative z-0 mb-1 w-full group">
+                            <input type="text" name="floating_type" id="floating_type" list="type"
+                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" " required />
+                            <label for="floating_type"
+                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Тип</label>
+                            <datalist id="type">
+                                <option data="task">Задача</option>
+                                <option data="error">Ошибка</option>
+                                <option data="epic">Эпик</option>
+                                <option data="story">История</option>
+                            </datalist>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="relative z-0 mt-2 mb-6 w-full group">
+                        <input type="text" name="repeat_title" id="floating_repeat_title"
+                            class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                            placeholder=" " required />
+                        <label for="floating_repeat_title"
+                            class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Тема</label>
+                    </div>
+                    <div class="relative z-0 mt-2 mb-6 w-full group">
+                        <label for="description"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Описание</label>
+                        <input type="text" id="description"
+                            class="max-h-96 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            required> </input>
+                    </div>
+                    <div class="grid md:grid-cols-2 md:gap-6">
+                        <div class="relative z-0 mb-6 w-full group">
+                            <input type="text" name="floating_first_name" id="floating_first_name"
+                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" " required />
+                            <label for="floating_first_name"
+                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                --- </label>
+                        </div>
+                        <div class="relative z-0 mb-6 w-full group">
+                            <input type="text" name="floating_last_name" id="floating_last_name"
+                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" " required />
+                            <label for="floating_last_name"
+                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                --- </label>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 md:gap-6">
+                        <div class="relative z-0 mb-6 w-full group">
+                            <input type="text" name="floating_phone" id="floating_phone"
+                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" " required />
+                            <label for="floating_phone"
+                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                --- </label>
+                        </div>
+                        <div class="relative z-0 mb-6 w-full group">
+                            <input type="text" name="floating_company" id="floating_company"
+                                class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" " required />
+                            <label for="floating_company"
+                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">-
+                                - -</label>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-1.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                </div>
+            </form>
+        </div>
+        <script>
+            var config = { editorResizeMode: "none", toolbar: 'basic' };
+
+            config.file_upload_handler = function (file, callback, optionalIndex, optionalFiles) {
+                var uploadhandlerpath = "/upload";
+
+                console.log("upload", file, "to", uploadhandlerpath)
+
+                function append(parent, tagname, csstext) {
+                    var tag = parent.ownerDocument.createElement(tagname);
+                    if (csstext) tag.style.cssText = csstext;
+                    parent.appendChild(tag);
+                    return tag;
+                }
+
+                var uploadcancelled = false;
+
+                var dialogouter = append(document.body, "div", "display:flex;align-items:center;justify-content:center;z-index:999999;position:fixed;left:0px;top:0px;width:100%;height:100%;background-color:rgba(128,128,128,0.5)");
+                var dialoginner = append(dialogouter, "div", "background-color:white;border:solid 1px gray;border-radius:15px;padding:15px;min-width:200px;box-shadow:2px 2px 6px #7777");
+
+                var line1 = append(dialoginner, "div", "text-align:center;font-size:1.2em;margin:0.5em;");
+                line1.innerText = "Uploading...";
+
+                var totalsize = file.size;
+                var sentsize = 0;
+
+                if (optionalFiles && optionalFiles.length > 1) {
+                    totalsize = 0;
+                    for (var i = 0; i < optionalFiles.length; i++) {
+                        totalsize += optionalFiles[i].size;
+                        if (i < optionalIndex) sentsize = totalsize;
+                    }
+                    console.log(totalsize, optionalIndex, optionalFiles)
+                    line1.innerText = "Uploading..." + (optionalIndex + 1) + "/" + optionalFiles.length;
+                }
+
+                var line2 = append(dialoginner, "div", "text-align:center;font-size:1.0em;margin:0.5em;");
+                line2.innerText = "0%";
+
+                var progressbar = append(dialoginner, "div", "border:solid 1px gray;margin:0.5em;");
+                var progressbg = append(progressbar, "div", "height:12px");
+
+                var line3 = append(dialoginner, "div", "text-align:center;font-size:1.0em;margin:0.5em;");
+                var btn = append(line3, "button");
+                btn.className = "btn btn-primary";
+                btn.innerText = "cancel";
+                btn.onclick = function () {
+                    uploadcancelled = true;
+                    xh.abort();
+                }
+
+                const formData = new FormData();
+                formData.append("file", file)
+
+                var xh = new XMLHttpRequest();
+                xh.open("POST", uploadhandlerpath, true);
+                xh.onload = xh.onabort = xh.onerror = function (pe) {
+                    console.log(pe);
+                    console.log(xh);
+                    dialogouter.parentNode.removeChild(dialogouter);
+                    if (pe.type == "load") {
+                        if (xh.status != 200) {
+                            console.log("uploaderror", pe);
+                            if (xh.responseText.startsWith("ERROR:")) {
+                                callback(null, "http-error-" + xh.responseText.substring(6));
+                            }
+                            else {
+                                callback(null, "http-error-" + xh.status);
+                            }
+                        }
+                        else if (xh.responseText.startsWith("READY:")) {
+                            console.log("File uploaded to " + xh.responseText.substring(6));
+                            callback(xh.responseText.substring(6));
+                        }
+                        else {
+                            callback(null, "http-error-" + xh.responseText);
+                        }
+                    }
+                    else if (uploadcancelled) {
+                        console.log("uploadcancelled", pe);
+                        callback(null, "cancelled");
+                    }
+                    else {
+                        console.log("uploaderror", pe);
+                        callback(null, pe.type);
+                    }
+                }
+                xh.upload.onprogress = function (pe) {
+                    console.log(pe);
+                    //pe.total
+                    var percent = Math.floor(100 * (sentsize + pe.loaded) / totalsize);
+                    line2.innerText = percent + "%";
+
+                    progressbg.style.cssText = "background-color:green;width:" + (percent * progressbar.offsetWidth / 100) + "px;height:12px;";
+                }
+                xh.send(formData);
+            }
+            var editor1 = new RichTextEditor("#description", config);
+            $('.richtexteditor').addClass('max-h-[800px]');
+
+            let action = $('meta[data-action]').attr('data-action');
+            if (action == 'edit') {
+                editor1.setHTMLCode(`{{- text|safe -}}`);
+            }
+
+        </script>
+    </main>
+</div>
+
+{% include "footer.html" %}
+
+{% endblock %}
