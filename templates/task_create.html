@@ -20,29 +20,27 @@
                 <div class="mb-5 w-7/12 bg-emerald-100 p-4">
                     <div class="grid md:grid-cols-2 md:gap-6">
                         <div class="relative z-0 mb-5 w-full group">
-                            <input type="text" name="project" id="project" list="projects"
+                            <select type="text" name="project" id="project" 
                                 class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                placeholder=" " required />
+                                placeholder=" " required>
+                                {% for project in project_list %}
+                                <option value="{{project.key}}">{{project.key}}</option>
+                                {% endfor %} 
+                            </select>
                             <label for="project"
                                 class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Проект</label>
-                            <datalist id="projects">
-                                {% for project in project_list %}
-                                <option value="{{project.key}}">{{project.name}}</option>
-                                {% endfor %}
-                            </datalist>
                         </div>
                         <div class="relative z-0 mb-1 w-full group">
-                            <input type="text" name="type" id="type" list="types"
+                            <select type="text" name="type" id="type" list="types"
                                 class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                placeholder=" " required />
+                                placeholder=" " required>
+                                <option value="1" selected>Задача</option>
+                                <option value="2">Ошибка</option>
+                                <option value="3">Эпик</option>
+                                <option value="4">История</option>
+                            </select>
                             <label for="type"
                                 class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Тип</label>
-                            <datalist id="types">
-                                <option>Задача</option>
-                                <option>Ошибка</option>
-                                <option>Эпик</option>
-                                <option>История</option>
-                            </datalist>
                         </div>
                     </div>
                     <hr>
@@ -62,20 +60,19 @@
                     </div>
 
                     <div class="relative z-0 mb-6 w-full group">
-                        <input type="text" name="priority" id="priority" list="priorities"
-                            class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                            placeholder=" " required />
+                        <select type="text" name="priority" id="priority"
+                            class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
+                            placeholder=" " required>
+                            <option value="1">Lowest</option>
+                            <option value="2">Low</option>
+                            <option value="3" selected>Medium</option>
+                            <option value="4">High</option>
+                            <option value="5">Highest</option>
+                            <option value="6">Blocker</option>
+                        </select>
                         <label for="priority"
                             class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
                             Приоритет </label>
-                        <datalist id="priorities">
-                            <option>Lowest</option>
-                            <option>Low</option>
-                            <option>Medium</option>
-                            <option>High</option>
-                            <option>Highest</option>
-                            <option>Blocker</option>
-                        </datalist>
                     </div>
                     <div class="relative z-0 mb-6 w-full group">
                         <input type="text" name="tags" id="tags"
@@ -86,26 +83,12 @@
                             Метки </label>
                         <!-- TO DO: Add dynamic tags upload and custom library -->
                     </div>
-
-
-                    Вложения <div class="flex justify-center items-center w-full mb-4">
-                        <label for="dropzone-file"
-                            class="flex flex-col justify-center items-center w-full h-32 bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                            <div class="flex flex-col justify-center items-center pt-5 pb-6">
-                                <svg aria-hidden="true" class="mb-3 w-10 h-10 text-gray-400" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                    </path>
-                                </svg>
-                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span
-                                        class="font-semibold">Click to upload</span> or drag and drop</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG, GIF, TXT, PDF, DOCX,
-                                    XLSX</p>
-                            </div>
-                            <input id="dropzone-file" type="file" class="hidden" />
-                        </label>
-                    </div>
+                    <fieldset class="w-full space-y-1 dark:text-gray-100">
+                        <label for="files" class="block text-sm font-medium">Вложения</label>
+                        <div class="flex">
+                            <input type="file" name="file" id="attach" class="px-8 py-12 border-2 border-dashed rounded-md dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800" multiple>
+                        </div>
+                    </fieldset>
                     <div class="relative z-0 mb-6 w-full group">
                         <input type="text" name="assignee" id="assignee"
                             class="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
@@ -236,9 +219,30 @@
                 data['description'] = editor1.getHTMLCode();
                 data['priority'] = $('#priority').val();
                 data['tags'] = $('#tags').val();
-                data['attach'] = $('#dropzone-file').val();
                 data['assignee'] = $('#assignee').val();
+                data['attach'] = null;
+
+                files = $('#attach').prop('files');
+                var form_data = new FormData();
+                $.each($("input[type='file']")[0].files, function(i, file) {
+                    form_data.append('file', file);
+                });
+                
+                
                 console.log(data);
+                console.log(form_data);
+
+                $.ajax({
+                    method: 'POST',
+                    url: '/upload', //FIX
+                    data: form_data,
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    success: function (resp) {
+                        data['attach'] = resp
+                    }
+                });
 
                 $.ajax({
                     type: 'POST',

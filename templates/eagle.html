@@ -5,98 +5,113 @@
 <div id="content" class="h-full">
 
 
-    {% if current_user.is_authenticated %}
-
     <div class="min-h-full pb-40">
         {% include "navbar.html" %}
 
-        <!-- <header class="bg-white dark:bg-slate-700 shadow">
-            <div class="max-w-7xl mx-auto py-2 lg:py-6 px-4 sm:px-6 lg:px-8">
-                <h1 class="!text-[24px] lg:text-3xl font-bold text-gray-900 dark:text-gray-200">Главная</h1>
-            </div>
-        </header> -->
         <main class="">
             <div class="max-w-7xl mx-auto pt-6 pb-10 sm:px-6 lg:px-8 flex justify-between">
                 <div class="w-full mx-4 jg:mr-10">
-                    <!-- <label class="text-xl font-bold dark:text-gray-200 ml-4 lg:ml-auto my-2">Пространства</label> -->
-                    <div class="container grid max-w-screen-xl gap-3 lg:gap-8 lg:grid-cols-2 lg:grid-rows-2 lg:mt-5">
-                        
-                    </div>
-                </div>  
+
+                    <table class="table w-full">
+                        <!-- head -->
+                        <thead>
+                            <tr>
+                                <th>
+                                    <label>
+                                        <input type="checkbox" class="checkbox" />
+                                    </label>
+                                </th>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Приоритет</th>
+                                <th>Статус</th>
+                                <th>Исполнитель</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                            <tr class="border-x-2 rounded {% if task.priority == '1' %} border-blue-300
+                            {% elif task.priority == '2' %} border-blue-200
+                            {% elif task.priority == '3' %} border-yellow-200
+                            {% elif task.priority == '4' %} border-red-300
+                            {% elif task.priority == '5' %} border-red-500
+                            {% else %} border-red-800
+                            {% endif %}">
+                                <th>
+                                    <label>
+                                        <input type="checkbox" class="checkbox" />
+                                    </label>
+                                </th>
+                                <td>
+                                    <div class="flex items-center space-x-3">
+                                        {{task.id}}
+                                    </div>
+                                </td>
+                                <td>
+                                    {{task.title}}
+                                </td>
+                                <td class="flex flex-row flex-nowrap items-center">
+                                    {% if task.priority == '1' %}
+                                        <img src="/static/eagle/lowest.svg" class="h-5 mr-1"> Lowest
+                                    {% elif task.priority == '2' %}
+                                        <img src="/static/eagle/low.svg" class="h-5 mr-1"> Low
+                                    {% elif task.priority == '3' %}
+                                        <img src="/static/eagle/medium.svg" class="h-5 mr-1"> Medium
+                                    {% elif task.priority == '4' %}
+                                        <img src="/static/eagle/high.svg" class="h-5 mr-1"> High
+                                    {% elif task.priority == '5' %}
+                                        <img src="/static/eagle/highest.svg" class="h-5 mr-1"> Highest
+                                    {% else %}
+                                        <img src="/static/eagle/blocker.svg" class="h-5 mr-1"> Blocker
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task.status == 1 %}
+                                        To do
+                                    {% elif task.status == 2 %}
+                                        In progress
+                                    {% elif task.status == 3 %}
+                                        Review
+                                    {% elif task.status == 4 %}
+                                        Test
+                                    {% else %}
+                                        Done
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{task.assignee}}
+                                </td>
+                                <th>
+                                    <button data-task="{{task.id}}" class="task-detail btn btn-ghost btn-xs">details</button>
+                                </th>
+                            </tr>
+                            {% endfor %}
+                            <!-- foot -->
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Приоритет</th>
+                                <th>Статус</th>
+                                <th>Исполнитель</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+
+                    </table>
+
+                </div>
             </div>
         </main>
-        
+    <script>
+        $('.task-detail').click(function() {
+            var tid = $(this).data('task');
+            window.open('./eagle/task?id='+tid, target='_self');
+        });
+    </script>
     </div>
     {% include "footer.html" %}
-    <script>
-        $(document).ready(function() {
-            $("img").each(function() {
-                if ($(this).attr('src') == "") {
-                    $(this).hide();
-                }
-            });
-        });
-    </script>
-    <script>
-        $('.space-fav-btn').click(function () { 
-            let btn = this;
-            let sid = $(this).data('fav-id');
-            console.log($(this).find('svg').attr('fill'))
-            if ($(this).find('svg').attr('fill') == 'none' ) {
-                $.ajax({
-                    type: "post",
-                    url: "/fav?space="+sid+"&action=add",
-                    success: function (response) {
-                        $(btn).find('svg').attr('fill', '#45818e')
-                    }
-                });
-            } else {
-                $.ajax({
-                    type: "post",
-                    url: "/fav?space="+sid+"&action=remove",
-                    success: function (response) {
-                        $(btn).find('svg').attr('fill', 'none')
-                    }
-                });
-            }
-        });
-    </script>
-    <script>
-        $('[data-obj="space-block"]').each(function() {
-            $(this).css('cursor', 'pointer')
-            var home = $(this).data('homepage');
-            var id = $(this).data('id') + '';
-            favList = {{ fav|safe }};
-            if ($.inArray(id, favList) >= 0) {
-                $(this).find('svg').attr('fill', '#45818e')
-            }
-            $(this).click(function() {
-                url = '/?space='+id;
-                window.open(url, target="_self");
-            }).find('.space-fav-btn').click(function(e) {
-                return false;
-            });
-        });
-    </script>
-
-    {% else %}
-
-    <div class="hero min-h-screen" style="background-image: url(./static/bg.jpg)">
-        <div class="hero-overlay bg-opacity-50"></div>
-        <div class="hero-content text-center text-neutral-content">
-            <div class="max-w-md">
-                <h1 class="mb-5 text-5xl font-bold">Fill.in - Kind of Confluence</h1>
-                <p class="mb-5">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi
-                    exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.</p>
-                <a class="btn btn-primary" href="{{url_for('login')}}">Sign in</a>
-            </div>
-        </div>
-    </div>
-
-    {% endif %}
-
 </div>
-{% if current_user.is_authenticated %}
-
-{% endif %}
 {% endblock %}

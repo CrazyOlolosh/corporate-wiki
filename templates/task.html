@@ -21,9 +21,6 @@
         border-width: 1px;
         padding: 5px;
     }
-    .jstree-default .jstree-node, .jstree-default .jstree-icon {
-        background-image: url('./static/32px.png');
-    }
 
     ul {
         list-style-type: disc;
@@ -39,58 +36,19 @@
     <header class="sticky top-0 z-40 bg-white dark:bg-slate-700 shadow">
         <div class="sticky max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-200">{{ name }}</h1>
-            <!-- <button id="edit-btn"
-                class="h-7 w-7 rounded-lg bg-purple-600 hover:bg-purple-700 text-white align-middle"
-                title="Редактировать"><i class="las la-pen"></i></button> -->
         </div>
     </header>
 
     <main>
         <div class="flex">
-            <div id="sidebar" class="mr-0">
-                {% include "sidebar.html" %}
-            </div>
             <div id="main" class="mx-auto overflow-x-hidden text-black ">
                 <div id="main-text" class="lg:w-[1200px] lg:max-w-[1500px] mx-auto py-6 sm:px-6 lg:px-10 bg-white">
-                    {{ text|safe }}
+                    
                 </div>
                 <div class="my-10 mx-7">
-                    <form action="{{ request.path }}" method="POST">
-                        <div
-                            class="mb-4 w-full bg-gray-50 rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
-                            <div class="py-2 px-4 bg-white rounded-t-lg dark:bg-gray-800">
-                                <label for="comment" class="sr-only">Ваш комментарий</label>
-                                {{ comment.text(class_="px-0 w-full text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400") }}
-                            </div>
-                            <div class="flex justify-between items-center py-2 px-3 border-t dark:border-gray-600">
-                                <button type="submit"
-                                    class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800">
-                                    Отправить комментарий
-                                </button>
-                                <div class="flex pl-0 space-x-1 sm:pl-2">
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+
                     <div>
-                        {% for comment in comments %}
-                        <div class="container flex flex-col w-full mb-1 mx-auto divide-y rounded-md divide-gray-700 dark:bg-gray-900 dark:text-gray-100">
-                            <div class="flex justify-between p-4">
-                                <div class="flex space-x-4">
-                                    <div class="relative avatar w-12 {% if comment.author_active %} online {% else %} offline {% endif %}">
-                                        <img src="{{comment.author_img}}" alt="" class="object-cover w-12 h-12 rounded-full dark:bg-gray-500">
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">{{comment.author}}</h4>
-                                        <span class="text-xs dark:text-gray-400">{{comment.time}}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4 space-y-2 text-sm dark:text-gray-400">
-                                <p>{{comment.text}}</p>
-                            </div>
-                        </div>
-                        {% endfor %}
+
                     </div>    
                 </div>
             </div>
@@ -109,10 +67,6 @@
             if ($(this).css("text-align") == "center") {
                 $(this).css("text-align", "-webkit-center");
             }
-        });
-        $('#edit-btn').click(function () {
-            let id = $('meta[data-id]').attr('data-id');
-            window.open('/edit?id=' + id, target = "_self")
         });
     });
 

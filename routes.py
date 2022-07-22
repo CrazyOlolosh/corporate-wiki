@@ -44,6 +44,7 @@ from app import UPLOAD_FOLDER, SPACE_IMG_FOLDER, create_app, db, login_manager, 
 from models import Spaces, Tasks, User, Page, Versions, Comments
 from forms import comment_form, login_form, register_form, post_form, permission_form, space_form
 
+from func import *
 
 import random
 import string
@@ -77,7 +78,7 @@ def session_handler():
 def custom_connect_event(json, methods=['GET', 'POST']):
     db.session.begin()
     current_user.online = True
-    print(f"{current_user.username} is online. {current_user.online}")
+    # print(f"{current_user.username} is online. {current_user.online}")
     db.session.commit()
     db.session.close()
 
@@ -87,10 +88,10 @@ def custom_disconnect_event(json, methods=['GET', 'POST']):
     date = int(time.time())
     db.session.begin()
     username = json['user']
-    user = User.query.filter(User.username == username).first()
-    user.last_online = date
-    user.online = False
-    print(f"{user.username} is offline. {user.online}")
+    # user = User.query.filter(User.username == username).first()
+    # user.last_online = date
+    # user.online = False
+    # print(f"{user.username} is offline. {user.online}")
     db.session.commit()
     db.session.close()
 
@@ -306,26 +307,48 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route("/upload", methods=["GET", "POST"])
+@app.route("/upload", methods=["POST"])
 def upload_file():
     if request.method == "POST":
         # check if the post request has the file part
         if "file" not in request.files:
             flash("No file part")
             return redirect(request.url)
-        file = request.files["file"]
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file.filename == "":
-            flash("No selected file")
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            pre_path = os.path.join(app.config["UPLOAD_FOLDER"])
-            path = uniquify(f"{pre_path}/{filename}")
-            filename = path.split("/")[-1]
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            return f"READY:{UPLOAD_FOLDER}/{filename}"
+        files = request.files.getlist("file")
+        print(files)
+        if len(files) > 1:
+            link_list = ''
+            for file in files:
+                print(file)
+            # file = request.files["file"]
+            # If the user does not select a file, the browser submits an
+            # empty file without a filename.
+                if file.filename == "":
+                    flash("No selected file")
+                    return redirect(request.url)
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    pre_path = os.path.join(app.config["UPLOAD_FOLDER"])
+                    path = uniquify(f"{pre_path}/{filename}")
+                    print(path)
+                    filename = path.split("/")[-1]
+                    file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                    link_list += f'{UPLOAD_FOLDER[1:]}/{filename}; '
+            return link_list        
+
+        else:
+            if file.filename == "":
+                flash("No selected file")
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                pre_path = os.path.join(app.config["UPLOAD_FOLDER"])
+                path = uniquify(f"{pre_path}/{filename}")
+                print(path)
+                filename = path.split("/")[-1]
+                file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                return f"READY:{UPLOAD_FOLDER[1:]}/{filename}"
+        
 
 
 def uniquify(path):
@@ -1067,59 +1090,28 @@ def gallery_fix():
 @app.route("/eagle", methods=("GET", "POST"), strict_slashes=False)
 def eagle_index():
     if current_user.is_authenticated:
-        try:
-            request.args['space']
-        except KeyError:
-            parent = None
-        else:
-            parent = request.args['space']
-
-        if current_user.fav_spaces:
-            fav_list = current_user.fav_spaces[1:-1].split(",")
-        else:
-            fav_list = []
-        if current_user.allowed_spaces:
-            s_list = current_user.allowed_spaces[1:-1].split(",")
-            spaces_raw = Spaces.query.filter(and_(Spaces.parent == parent, Spaces.id.in_(s_list))).order_by(desc(Spaces.id.in_(fav_list))).all()
-        else:
-            if current_user.role == "Admin":
-                spaces_raw = Spaces.query.filter(Spaces.parent == parent).order_by(desc(Spaces.id.in_(fav_list))).all()
-            else:
-                spaces_raw = []
-
-        if len(spaces_raw) < 1:
-            p = Spaces.query.get(parent)
-            try:
-                homepage_id = p.homepage
-            except AttributeError:
-                return render_template('ftu.html')
-            else:    
-                return redirect(url_for('page', id=homepage_id))
-
-        spaces = [
+        task_list = [
             {
-                "id": space.id,
-                "parrent": space.parent,
-                "name": space.name,
-                "image": space.logo,
-                "members": space.members,
-                "description": space.description,
-                "homepage": space.homepage,
-            }
-            for space in spaces_raw
-        ]
-        
-        fav_list = dumps(fav_list)
-    else:
-        spaces = []
-        fav_list = []
+                'id': f'{task.project_key}-{task.project_id}',
+                'title': task.name,
+                'priority': task.priority,
+                'status': task.status,
+                'assignee': task.assignee
 
-    return render_template("eagle.html", title="Главная", spaces=spaces, action="main", fav=fav_list, origin='eagle')
+            } for task in Tasks.query.all()
+        ]
+
+    return render_template("eagle.html", title="Главная", action="main", origin='eagle', tasks=task_list)
 
 
 @app.route("/eagle/task", methods=("GET", "POST"), strict_slashes=False)
 @login_required
 def eagle_task():
+    args = request.args
+    tid = args.get('id')
+    project, id = tid.split('-')
+    task = task_get(id)
+    print(task)
     return render_template('task.html')
 
 
@@ -1176,28 +1168,31 @@ def task_api():
     limit = q_param.get('limit')
     offset = q_param.get('offset')
 
-    types = {'Задача':'task', 'Ошибка':'error', 'Эпик':'epic', 'История':'story'}
-    priorities = {'Lowest':1, 'Low':2, 'Medium':3, 'High':4, 'Highest':5, 'Blocker':6}
+    # types = {'Задача':1, 'Ошибка':2, 'Эпик':3, 'История':4}
+    # priorities = {'Lowest':1, 'Low':2, 'Medium':3, 'High':4, 'Highest':5, 'Blocker':6}
 
     if request.method == "GET":
         if id:
-            return dumps(Tasks.query.get(id))
+            print("Get task by id cal")
+            return dumps(task_get(id))
             
     if request.method == "POST":
         if not id:
             data = loads(request.data)
-            
+            print(data)
             
             name = data['title']
             project = data['project']
             project_id_raw = Tasks.query.filter(Tasks.project_key == project).all()
-            project_id = len(project_id_raw) + 1
+            pid = len(project_id_raw) + 1
             description = data['description']
             date = int(time.time())
-            type_raw = data['type']
-            type = types[type_raw]
-            priority_raw = data['priority']
-            priority = priorities[priority_raw]
+            # type_raw = data['type']
+            # type = types[type_raw]
+            # priority_raw = data['priority']
+            # priority = priorities[priority_raw]
+            t_type = data['type']
+            priority = data['priority']
             if data['tags']:
                 tags = data['tags']
             else:
@@ -1210,8 +1205,9 @@ def task_api():
             assignee = data['assignee']
 
             db.session.begin()
-            task = Tasks(name, project, description, project_id=project_id, author=current_user, date_creation=date, type=type, priority=priority, tags=tags, attach=attach, assignee=assignee)
-            db.session.commit(task)
+            task = Tasks(name, project, description, author=current_user.username, date_creation=date, project_id=pid, type=t_type, priority=priority, tags=tags, attach=attach, assignee=assignee)
+            db.session.add(task)
+            db.session.commit()
             db.session.close()
 
             return dumps({'result': 'Task created'})

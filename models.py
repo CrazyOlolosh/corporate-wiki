@@ -201,7 +201,7 @@ class Tasks(db.Model):
     date_update = db.Column(db.Integer)
     date_estimate = db.Column(db.Integer)
 
-    def __init__(self, name, project_key, project_id, description, author, date_creation, type=1, priority=3, tags=None, attach=None, tied_tasks=None, assignee=None, epic=None, status=1, solution=None,  date_update=None, date_estimate=None):
+    def __init__(self, name, project_key, description, author, date_creation, project_id=None, type=1, priority=3, tags=None, attach=None, tied_tasks=None, assignee=None, epic=None, status=1, solution=None,  date_update=None, date_estimate=None):
         self.name = name
         self.project_key = project_key
         self.project_id = project_id
